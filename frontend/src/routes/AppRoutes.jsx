@@ -5,21 +5,45 @@ import Register from "../pages/auth/Register";
 import Dashboard from "../pages/dashboard/Dashboard";
 import Events from "../pages/events/Events";
 import EventForm from "../pages/events/EventForm";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function AppRoutes() {
   return (
     <Routes>
       {/* Default */}
-      <Route path="/" element={<Navigate to="/dashboard" />} />
+      <Route path="/" element={<Navigate to="/login" />} />
 
-      {/* Auth */}
+      {/* Auth (Public) */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Core */}
-      <Route path="/dashboard" element={<Dashboard />} />
-      <Route path="/events" element={<Events />} />
-      <Route path="/events/new" element={<EventForm />} />
+      {/* Core (Protected) */}
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/events"
+        element={
+          <ProtectedRoute>
+            <Events />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/events/new"
+        element={
+          <ProtectedRoute>
+            <EventForm />
+          </ProtectedRoute>
+        }
+      />
     </Routes>
   );
 }

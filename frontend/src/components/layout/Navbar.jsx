@@ -8,12 +8,11 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { getInitialTheme, applyTheme } from "../../context/theme";
-
-import logoLight from "../../assets/logo-light.svg";
-import logoDark from "../../assets/logo-dark.svg";
+import { useAuth } from "../../context/AuthContext";
 
 export default function Navbar() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
   const [theme, setTheme] = useState(getInitialTheme());
 
   const toggleTheme = () => {
@@ -29,13 +28,10 @@ export default function Navbar() {
     <nav className="bg-white dark:bg-slate-900 border-b border-slate-300 dark:border-slate-700 shadow-md">
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         
-        {/* Logo */}
-  <span className="text-lg font-bold tracking-tight text-white">
-  Unievents
-</span>
-
-
-
+        {/* Brand */}
+        <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
+          Unievents
+        </span>
 
         {/* Navigation */}
         <div className="flex items-center gap-8">
@@ -80,9 +76,12 @@ export default function Navbar() {
             )}
           </button>
 
-          {/* Logout (UI only) */}
+          {/* Logout */}
           <button
-            onClick={() => navigate("/login")}
+            onClick={() => {
+              logout();
+              navigate("/login");
+            }}
             className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:text-red-700"
           >
             <LogOut className="w-4 h-4" />
