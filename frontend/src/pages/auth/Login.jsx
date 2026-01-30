@@ -2,6 +2,9 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import { LogIn } from "lucide-react";
+
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export default function Login() {
   const navigate = useNavigate();
@@ -20,10 +23,19 @@ export default function Login() {
       return;
     }
 
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
+
     try {
       const res = await api.post("/auth/login", { email, password });
       login(res.data.token, res.data.user);
-      navigate("/dashboard");
+
+      const role = res.data.user.role;
+      if (role === "student") navigate("/dashboard/student");
+      else if (role === "organizer") navigate("/dashboard/organizer");
+      else if (role === "admin") navigate("/dashboard/admin");
     } catch (err) {
       setError(err.response?.data?.message || "Login failed");
     }
@@ -32,10 +44,17 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-950">
       <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-md p-6">
-        <h1 className="mb-2 text-center">Login</h1>
-        <p className="text-center mb-6">
-          Sign in to your Unievents account
-        </p>
+
+        {/* Header */}
+        <div className="flex flex-col items-center mb-6">
+          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
+            <LogIn className="h-5 w-5 text-indigo-700 dark:text-indigo-300" />
+          </div>
+          <h1>Welcome Back</h1>
+          <p className="mt-1 text-center">
+            Sign in to continue to Unievents
+          </p>
+        </div>
 
         {error && (
           <p className="mb-4 text-sm text-red-600 text-center">
@@ -50,7 +69,7 @@ export default function Login() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full mt-1 border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-700"
+              className="input mt-1"
             />
           </div>
 
@@ -60,13 +79,13 @@ export default function Login() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full mt-1 border border-slate-400 dark:border-slate-600 bg-white dark:bg-slate-800 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-700"
+              className="input mt-1"
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-indigo-700 text-white text-sm font-medium py-2 rounded-md hover:bg-indigo-800"
+            className="button-primary w-full"
           >
             Login
           </button>

@@ -2,9 +2,11 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
-import Dashboard from "../pages/dashboard/Dashboard";
-import Events from "../pages/events/Events";
-import EventForm from "../pages/events/EventForm";
+
+import StudentDashboard from "../pages/dashboard/StudentDashboard";
+import OrganizerDashboard from "../pages/dashboard/OrganizerDashboard";
+import AdminDashboard from "../pages/dashboard/AdminDashboard";
+
 import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function AppRoutes() {
@@ -13,34 +15,36 @@ export default function AppRoutes() {
       {/* Default */}
       <Route path="/" element={<Navigate to="/login" />} />
 
-      {/* Auth (Public) */}
+      {/* Auth */}
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Core (Protected) */}
+      {/* Student Dashboard */}
       <Route
-        path="/dashboard"
+        path="/dashboard/student"
         element={
-          <ProtectedRoute>
-            <Dashboard />
+          <ProtectedRoute allowedRoles={["student"]}>
+            <StudentDashboard />
           </ProtectedRoute>
         }
       />
 
+      {/* Organizer Dashboard */}
       <Route
-        path="/events"
+        path="/dashboard/organizer"
         element={
-          <ProtectedRoute>
-            <Events />
+          <ProtectedRoute allowedRoles={["organizer"]}>
+            <OrganizerDashboard />
           </ProtectedRoute>
         }
       />
 
+      {/* Admin Dashboard (optional) */}
       <Route
-        path="/events/new"
+        path="/dashboard/admin"
         element={
-          <ProtectedRoute>
-            <EventForm />
+          <ProtectedRoute allowedRoles={["admin"]}>
+            <AdminDashboard />
           </ProtectedRoute>
         }
       />
