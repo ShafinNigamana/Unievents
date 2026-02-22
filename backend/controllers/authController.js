@@ -102,6 +102,7 @@ const register = async (req, res) => {
       message: "User registered successfully",
     });
   } catch (error) {
+    console.error("[REGISTER ERROR]", error);
     return res.status(500).json({
       message: "Internal Server Error",
     });
@@ -121,7 +122,7 @@ const login = async (req, res) => {
       });
     }
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select("+password");
     if (!user) {
       return res.status(401).json({
         message: "Invalid email or password",
@@ -151,6 +152,7 @@ const login = async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("[LOGIN ERROR]", error);
     return res.status(500).json({
       message: "Internal Server Error",
     });

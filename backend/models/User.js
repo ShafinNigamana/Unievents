@@ -12,6 +12,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       unique: true,
+      index: true,
       lowercase: true,
       trim: true,
     },
@@ -19,26 +20,31 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: true,
+      select: false,
     },
 
     role: {
       type: String,
       enum: ["student", "organizer", "admin"],
-      default: "student",
+      required: true,
     },
 
-    // ✅ NEW — Student identity
     enrollmentId: {
       type: String,
+      default: null,
       unique: true,
-      sparse: true, // allows null for organizers
-      trim: true,
+      sparse: true,   // null values are excluded from the unique constraint
     },
 
-    // ✅ OPTIONAL
-    phone: {
-      type: String,
-      trim: true,
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
     },
   },
   { timestamps: true }

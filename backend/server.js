@@ -1,8 +1,10 @@
 const dns = require("dns");
-dns.setServers(["1.1.1.1"]); // temporary fix for SRV DNS
+dns.setServers(["1.1.1.1"]); // Temporary SRV DNS fix
 
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 require("dotenv").config();
 
 const connectDB = require("./config/db");
@@ -13,29 +15,83 @@ const authRoutes = require("./routes/authRoutes");
 
 const app = express();
 
-// Middleware
-app.use(cors());
-app.use(express.json()); // ✅ REQUIRED for req.body
+/* =========================
+   SECURITY MIDDLEWARE
+========================= */
 
-// Connect DB
+// Security headers
+app.use(helmet());
+
+// Rate limiting (Production safe)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+});
+app.use(limiter);
+
+// CORS
+const ALLOWED_ORIGINS = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  process.env.CLIENT_URL,
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (curl, Postman, mobile apps)
+      if (!origin) return callback(null, true);
+      if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: origin '${origin}' not allowed`));
+    },
+    credentials: true,
+  })
+);
+
+// Body parser
+app.use(express.json());
+
+/* =========================
+   CONNECT DATABASE
+========================= */
+
 connectDB();
 
-// Test Route
+/* =========================
+   HEALTH CHECK ROUTE
+========================= */
+
 app.get("/", (req, res) => {
-  res.send("Unievents Backend Running ✅");
+  res.send("Unievents Backend Running");
 });
 
-// API Routes
-app.use("/api/events", eventRoutes);
-app.use("/api/auth", authRoutes);
+/* =========================
+   API ROUTES
+========================= */
 
-// 🔍 Global error handler (DEV ONLY)
+// IMPORTANT: Updated base path to match documentation
+app.use("/api/v1/events", eventRoutes);
+app.use("/api/v1/auth", authRoutes);
+
+/* =========================
+   GLOBAL ERROR HANDLER
+========================= */
+
 app.use((err, req, res, next) => {
   console.error("Unhandled Error:", err);
-  res.status(500).json({ message: "Internal Server Error" });
+
+  res.status(err.statusCode || 500).json({
+    success: false,
+    error: err.message || "Internal Server Error",
+  });
 });
 
+/* =========================
+   SERVER START
+========================= */
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
