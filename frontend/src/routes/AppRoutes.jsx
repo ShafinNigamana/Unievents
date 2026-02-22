@@ -7,6 +7,10 @@ import StudentDashboard from "../pages/dashboard/StudentDashboard";
 import OrganizerDashboard from "../pages/dashboard/OrganizerDashboard";
 import AdminDashboard from "../pages/dashboard/AdminDashboard";
 
+import Events from "../pages/events/Events";
+import EventDetail from "../pages/events/EventDetail";
+import EventForm from "../pages/events/EventForm";
+
 import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function AppRoutes() {
@@ -19,7 +23,30 @@ export default function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
 
-      {/* Student Dashboard */}
+      {/* ── Public Event Pages ── */}
+      <Route path="/events" element={<Events />} />
+      <Route path="/events/archive" element={<Events archive />} />
+      <Route path="/events/:id" element={<EventDetail />} />
+
+      {/* ── Organizer / Admin: Create & Edit ── */}
+      <Route
+        path="/events/new"
+        element={
+          <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+            <EventForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/events/:id/edit"
+        element={
+          <ProtectedRoute allowedRoles={["organizer", "admin"]}>
+            <EventForm editMode />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ── Dashboards ── */}
       <Route
         path="/dashboard/student"
         element={
@@ -28,8 +55,6 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-      {/* Organizer Dashboard */}
       <Route
         path="/dashboard/organizer"
         element={
@@ -38,8 +63,6 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-
-      {/* Admin Dashboard (optional) */}
       <Route
         path="/dashboard/admin"
         element={

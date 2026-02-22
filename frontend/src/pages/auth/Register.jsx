@@ -1,202 +1,268 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import {
+  UserPlus, Mail, Lock, User, Hash,
+  Loader2, Eye, EyeOff, GraduationCap, Briefcase
+} from "lucide-react";
 import api from "../../services/api";
-import { UserPlus } from "lucide-react";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordRegex =
-  /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
-const phoneRegex = /^(\+91)?[0-9]{10}$/;
-const enrollmentRegex = /^[a-zA-Z0-9]+$/;
 
 export default function Register() {
   const navigate = useNavigate();
 
+  const [role, setRole] = useState("student");
   const [form, setForm] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "student",
     enrollmentId: "",
-    phone: "",
   });
-
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const set = (field) => (e) => setForm((p) => ({ ...p, [field]: e.target.value }));
 
   const validate = () => {
-    if (
-      !form.name ||
-      !form.email ||
-      !form.password ||
-      !form.confirmPassword
-    ) {
-      return "All required fields must be filled";
-    }
-
-    if (!emailRegex.test(form.email)) {
-      return "Please enter a valid email address";
-    }
-
-    if (!passwordRegex.test(form.password)) {
-      return "Password must be at least 8 characters and include one uppercase letter, one number, and one special character";
-    }
-
-    if (form.password !== form.confirmPassword) {
-      return "Passwords do not match";
-    }
-
-    if (form.role === "student") {
-      if (!form.enrollmentId) {
-        return "Enrollment ID is required for students";
-      }
-      if (!enrollmentRegex.test(form.enrollmentId)) {
-        return "Enrollment ID must contain only letters and numbers";
-      }
-    }
-
-    if (form.phone && !phoneRegex.test(form.phone)) {
-      return "Enter a valid phone number";
-    }
-
+    if (!form.name.trim()) return "Name is required.";
+    if (!emailRegex.test(form.email)) return "Enter a valid email address.";
+    if (form.password.length < 6) return "Password must be at least 6 characters.";
+    if (form.password !== form.confirmPassword) return "Passwords do not match.";
+    if (role === "student" && !form.enrollmentId.trim()) return "Enrollment ID is required for students.";
+    if (role === "student" && !/^[a-zA-Z0-9]+$/.test(form.enrollmentId))
+      return "Enrollment ID must be alphanumeric.";
     return null;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setSuccess("");
 
-    const validationError = validate();
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
+    const err = validate();
+    if (err) { setError(err); return; }
 
     try {
+      setLoading(true);
       await api.post("/auth/register", {
-        name: form.name,
-        email: form.email,
+        name: form.name.trim(),
+        email: form.email.trim(),
         password: form.password,
-        role: form.role,
-        enrollmentId:
-          form.role === "student" ? form.enrollmentId : undefined,
-        phone: form.phone || undefined,
+        confirmPassword: form.confirmPassword,
+        role,
+        enrollmentId: role === "student" ? form.enrollmentId.trim() : undefined,
       });
 
-      navigate("/login");
+      setSuccess("Account created! Redirecting to login…");
+      setTimeout(() => navigate("/login"), 1500);
     } catch (err) {
-      setError(err.response?.data?.message || "Registration failed");
+      setError(err.response?.data?.message || "Registration failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-100 dark:bg-slate-950">
-      <div className="w-full max-w-md bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-md p-6">
+    <div className="auth-page py-16">
+      <div className="w-full max-w-md animate-slide-up">
 
-        {/* Header */}
-        <div className="flex flex-col items-center mb-6">
-          <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 dark:bg-indigo-900">
-            <UserPlus className="h-5 w-5 text-indigo-700 dark:text-indigo-300" />
+        {/* Brand Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-gradient shadow-glow mb-4">
+            <UserPlus className="w-7 h-7 text-white" />
           </div>
-          <h1>Create Account</h1>
-          <p className="mt-1 text-center">
-            Register to access university events
+          <h1 className="text-3xl font-bold mb-1">Create account</h1>
+          <p className="text-slate-400">
+            Join{" "}
+            <span className="gradient-text font-semibold">UniEvents</span>
           </p>
         </div>
 
-        {error && (
-          <p className="mb-4 text-sm text-red-600 text-center">
-            {error}
-          </p>
-        )}
+        {/* Card */}
+        <div className="glass-card p-8">
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              name="name"
-              placeholder="Full Name"
-              value={form.name}
-              onChange={handleChange}
-              className="input"
-            />
-            <input
-              name="email"
-              placeholder="Email"
-              value={form.email}
-              onChange={handleChange}
-              className="input"
-            />
+          {/* Role selector */}
+          <div className="mb-6">
+            <label className="block mb-3">I am a</label>
+            <div className="grid grid-cols-2 gap-3">
+              {/* Student */}
+              <button
+                type="button"
+                onClick={() => setRole("student")}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200 ${role === "student"
+                    ? "border-brand-500 bg-brand-500/15 shadow-glow-sm"
+                    : "border-white/10 bg-white/5 hover:bg-white/8 hover:border-white/20"
+                  }`}
+              >
+                <GraduationCap
+                  className={`w-6 h-6 ${role === "student" ? "text-brand-400" : "text-slate-400"}`}
+                />
+                <span className={`text-sm font-medium ${role === "student" ? "text-brand-300" : "text-slate-300"}`}>
+                  Student
+                </span>
+              </button>
+
+              {/* Organizer */}
+              <button
+                type="button"
+                onClick={() => setRole("organizer")}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200 ${role === "organizer"
+                    ? "border-brand-500 bg-brand-500/15 shadow-glow-sm"
+                    : "border-white/10 bg-white/5 hover:bg-white/8 hover:border-white/20"
+                  }`}
+              >
+                <Briefcase
+                  className={`w-6 h-6 ${role === "organizer" ? "text-brand-400" : "text-slate-400"}`}
+                />
+                <span className={`text-sm font-medium ${role === "organizer" ? "text-brand-300" : "text-slate-300"}`}>
+                  Organizer
+                </span>
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={form.password}
-              onChange={handleChange}
-              className="input"
-            />
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              value={form.confirmPassword}
-              onChange={handleChange}
-              className="input"
-            />
-          </div>
+          {/* Alerts */}
+          {error && (
+            <div className="mb-5 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center animate-fade-in">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-5 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm text-center animate-fade-in">
+              {success}
+            </div>
+          )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <select
-              name="role"
-              value={form.role}
-              onChange={handleChange}
-              className="input"
-            >
-              <option value="student">Student</option>
-              <option value="organizer">Organizer</option>
-            </select>
+          <form onSubmit={handleSubmit} className="space-y-4">
 
-            {form.role === "student" && (
-              <input
-                name="enrollmentId"
-                placeholder="Enrollment ID"
-                value={form.enrollmentId}
-                onChange={handleChange}
-                className="input"
-              />
+            {/* Name */}
+            <div>
+              <label className="block mb-1.5">Full Name</label>
+              <div className="relative">
+                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                <input
+                  type="text"
+                  placeholder="John Doe"
+                  value={form.name}
+                  onChange={set("name")}
+                  className="input pl-10"
+                  autoComplete="name"
+                />
+              </div>
+            </div>
+
+            {/* Email */}
+            <div>
+              <label className="block mb-1.5">Email Address</label>
+              <div className="relative">
+                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                <input
+                  type="email"
+                  placeholder="you@university.edu"
+                  value={form.email}
+                  onChange={set("email")}
+                  className="input pl-10"
+                  autoComplete="email"
+                />
+              </div>
+            </div>
+
+            {/* Enrollment ID — student only */}
+            {role === "student" && (
+              <div className="animate-fade-in">
+                <label className="block mb-1.5">Enrollment ID</label>
+                <div className="relative">
+                  <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="e.g. 22CS0001"
+                    value={form.enrollmentId}
+                    onChange={set("enrollmentId")}
+                    className="input pl-10"
+                  />
+                </div>
+              </div>
             )}
-          </div>
 
-          <input
-            name="phone"
-            placeholder="Phone (optional)"
-            value={form.phone}
-            onChange={handleChange}
-            className="input"
-          />
+            {/* Password */}
+            <div>
+              <label className="block mb-1.5">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                <input
+                  type={showPw ? "text" : "password"}
+                  placeholder="Min. 6 characters"
+                  value={form.password}
+                  onChange={set("password")}
+                  className="input pl-10 pr-10"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(!showPw)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
 
-          <button
-            type="submit"
-            className="button-primary w-full"
-          >
-            Register
-          </button>
-        </form>
+            {/* Confirm Password */}
+            <div>
+              <label className="block mb-1.5">Confirm Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                <input
+                  type={showConfirmPw ? "text" : "password"}
+                  placeholder="Repeat your password"
+                  value={form.confirmPassword}
+                  onChange={set("confirmPassword")}
+                  className="input pl-10 pr-10"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPw(!showConfirmPw)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                >
+                  {showConfirmPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
 
-        <p className="text-center mt-4 text-sm">
-          Already have an account?{" "}
-          <Link
-            to="/login"
-            className="text-indigo-700 dark:text-indigo-400 hover:underline"
-          >
-            Login
-          </Link>
-        </p>
+            {/* Submit */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="button-primary w-full mt-2"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Creating account...
+                </>
+              ) : (
+                "Create Account"
+              )}
+            </button>
+          </form>
+
+          <div className="divider" />
+
+          <p className="text-center text-sm text-slate-400">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-brand-400 hover:text-brand-300 font-medium transition-colors"
+            >
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   );
