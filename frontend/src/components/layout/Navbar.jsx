@@ -1,10 +1,11 @@
 import { NavLink, useNavigate, Link } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Plus, LogOut,
-  Archive, ChevronDown, Menu, X
+  Archive, ChevronDown, Menu, X, Sun, Moon
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
 
 function NavItem({ to, icon: Icon, label, end = false, onClick }) {
   return (
@@ -71,6 +72,7 @@ const ROLE_COLOR = {
 export default function Navbar() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropOpen, setDropOpen] = useState(false);
   const dropRef = useRef(null);
@@ -120,6 +122,17 @@ export default function Navbar() {
 
           {/* Right side */}
           <div className="flex items-center gap-2">
+
+            {/* Theme toggle */}
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all duration-200"
+            >
+              {theme === "dark"
+                ? <Sun className="w-4 h-4" />
+                : <Moon className="w-4 h-4" />}
+            </button>
 
             {/* User dropdown trigger */}
             {user && (

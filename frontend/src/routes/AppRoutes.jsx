@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
+import Landing from "../pages/Landing";
 
 import StudentDashboard from "../pages/dashboard/StudentDashboard";
 import OrganizerDashboard from "../pages/dashboard/OrganizerDashboard";
@@ -16,8 +17,8 @@ import ProtectedRoute from "../components/ProtectedRoute";
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Default */}
-      <Route path="/" element={<Navigate to="/login" />} />
+      {/* Default — public landing page */}
+      <Route path="/" element={<Landing />} />
 
       {/* Auth */}
       <Route path="/login" element={<Login />} />

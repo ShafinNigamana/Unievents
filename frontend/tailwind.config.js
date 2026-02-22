@@ -21,11 +21,11 @@ export default {
           950: "#1a0562",
         },
         surface: {
-          900: "#0d0d1a",
-          800: "#12122b",
-          700: "#181836",
-          600: "#1e1e42",
-          500: "#25254e",
+          900: "rgb(var(--surface-900) / <alpha-value>)",
+          800: "rgb(var(--surface-800) / <alpha-value>)",
+          700: "rgb(var(--surface-700) / <alpha-value>)",
+          600: "rgb(var(--surface-600) / <alpha-value>)",
+          500: "rgb(var(--surface-500) / <alpha-value>)",
         },
       },
       fontFamily: {

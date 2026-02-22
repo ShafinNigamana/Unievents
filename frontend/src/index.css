@@ -5,6 +5,37 @@
 @tailwind utilities;
 
 /* =========================
+   Surface Color Tokens
+   ========================= */
+/* Dark (default) — space-separated R G B channels for Tailwind opacity support */
+:root {
+  --surface-900: 13 13 26;
+  /* #0d0d1a */
+  --surface-800: 18 18 43;
+  /* #12122b */
+  --surface-700: 24 24 54;
+  /* #181836 */
+  --surface-600: 30 30 66;
+  /* #1e1e42 */
+  --surface-500: 37 37 78;
+  /* #25254e */
+}
+
+/* Light — soft lavender-purple palette */
+:root:not(.dark) {
+  --surface-900: 244 242 255;
+  /* #f4f2ff */
+  --surface-800: 233 229 253;
+  /* #e9e5fd */
+  --surface-700: 221 216 251;
+  /* #ddd8fb */
+  --surface-600: 208 201 248;
+  /* #d0c9f8 */
+  --surface-500: 197 188 245;
+  /* #c5bcf5 */
+}
+
+/* =========================
    Base Layer
    ========================= */
 @layer base {
@@ -140,4 +171,164 @@
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* =========================
+   Light Mode Overrides
+   ========================= */
+:root:not(.dark) {
+  color-scheme: light;
+}
+
+/* Body */
+:root:not(.dark) body {
+  color: #1e1a3f;
+  background-image:
+    radial-gradient(ellipse at 20% 10%, rgba(109, 58, 255, 0.10) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 90%, rgba(168, 85, 247, 0.07) 0%, transparent 55%);
+}
+
+/* Headings */
+:root:not(.dark) h1,
+:root:not(.dark) h2,
+:root:not(.dark) h3 {
+  color: #12102a !important;
+}
+
+:root:not(.dark) p {
+  color: #4a4570;
+}
+
+:root:not(.dark) label {
+  color: #5c5880;
+}
+
+/* White text overrides — flip to dark in light mode */
+:root:not(.dark) .text-white {
+  color: #12102a !important;
+}
+
+:root:not(.dark) .text-slate-100 {
+  color: #1e1a3f !important;
+}
+
+:root:not(.dark) .text-slate-200 {
+  color: #2d2950 !important;
+}
+
+:root:not(.dark) .text-slate-300 {
+  color: #3e3a62 !important;
+}
+
+:root:not(.dark) .text-slate-400 {
+  color: #5c5880 !important;
+}
+
+:root:not(.dark) .text-slate-500 {
+  color: #7b789e !important;
+}
+
+/* Glass card — white with purple shimmer */
+:root:not(.dark) .glass-card {
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-color: rgba(109, 58, 255, 0.18) !important;
+  backdrop-filter: blur(20px) !important;
+  box-shadow: 0 4px 28px rgba(109, 58, 255, 0.10) !important;
+}
+
+/* Navbar */
+:root:not(.dark) nav.sticky {
+  background: rgba(244, 242, 255, 0.88) !important;
+  border-bottom-color: rgba(109, 58, 255, 0.14) !important;
+}
+
+/* Inline bg-white/5 panels (table headers, dropdown user info strip) */
+:root:not(.dark) .bg-white\/5 {
+  background-color: rgba(109, 58, 255, 0.06) !important;
+}
+
+:root:not(.dark) .bg-white\/10 {
+  background-color: rgba(109, 58, 255, 0.10) !important;
+}
+
+:root:not(.dark) .bg-white\/8 {
+  background-color: rgba(109, 58, 255, 0.08) !important;
+}
+
+/* Borders */
+:root:not(.dark) .border-white\/10 {
+  border-color: rgba(109, 58, 255, 0.15) !important;
+}
+
+:root:not(.dark) .border-white\/8 {
+  border-color: rgba(109, 58, 255, 0.12) !important;
+}
+
+/* Input */
+:root:not(.dark) .input {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(109, 58, 255, 0.25) !important;
+  color: #12102a !important;
+}
+
+:root:not(.dark) .input::placeholder {
+  color: #9b97bf;
+}
+
+:root:not(.dark) .input:hover {
+  background: #ffffff !important;
+  border-color: rgba(109, 58, 255, 0.45) !important;
+}
+
+:root:not(.dark) .input:focus {
+  background: #ffffff !important;
+}
+
+/* Select */
+:root:not(.dark) .select {
+  background: rgba(255, 255, 255, 0.92) !important;
+  border-color: rgba(109, 58, 255, 0.25) !important;
+  color: #12102a !important;
+  color-scheme: light;
+}
+
+:root:not(.dark) .select option {
+  background-color: #f4f2ff;
+  color: #12102a;
+}
+
+/* Ghost button */
+:root:not(.dark) .button-ghost {
+  background: rgba(255, 255, 255, 0.65) !important;
+  border-color: rgba(109, 58, 255, 0.22) !important;
+  color: #3e3a62 !important;
+}
+
+:root:not(.dark) .button-ghost:hover {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(109, 58, 255, 0.45) !important;
+  color: #12102a !important;
+}
+
+/* Danger button — stays red, just slightly adjusts */
+:root:not(.dark) .button-danger {
+  opacity: 0.95;
+}
+
+/* Table rows & dividers */
+:root:not(.dark) tr.border-b {
+  border-color: rgba(109, 58, 255, 0.10) !important;
+}
+
+:root:not(.dark) .divide-white\/8>*+* {
+  border-color: rgba(109, 58, 255, 0.10) !important;
+}
+
+/* Scrollbar */
+:root:not(.dark) ::-webkit-scrollbar-track {
+  background: #ede9ff;
+}
+
+:root:not(.dark) ::-webkit-scrollbar-thumb {
+  background: #a58fff;
 }
