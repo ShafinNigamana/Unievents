@@ -16,6 +16,22 @@ const autoArchiveIfExpired = async (event) => {
 };
 
 /* =========================
+   PAGINATION HELPER
+========================= */
+
+const paginate = (query, req) => {
+  const page = parseInt(req.query.page, 10);
+  const limit = parseInt(req.query.limit, 10);
+
+  if (page > 0 && limit > 0) {
+    const skip = (page - 1) * limit;
+    return { paginatedQuery: query.skip(skip).limit(limit), page, limit };
+  }
+
+  return { paginatedQuery: query, page: null, limit: null };
+};
+
+/* =========================
    CREATE EVENT
 ========================= */
 
@@ -165,6 +181,13 @@ const softDeleteEvent = async (req, res, next) => {
   try {
     const event = req.event;
 
+    if (event.status === "archived" && req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        error: "Archived events cannot be deleted by organizers",
+      });
+    }
+
     event.isDeleted = true;
     event.deletedAt = new Date();
     event.deletedBy = req.user.id;
@@ -235,7 +258,7 @@ const permanentDeleteEvent = async (req, res, next) => {
 
 const getPublishedEvents = async (req, res, next) => {
   try {
-    const { year, category, search } = req.query;
+    const { year, category, search, tag } = req.query;
 
     let filter = {
       status: "published",
@@ -244,6 +267,7 @@ const getPublishedEvents = async (req, res, next) => {
 
     if (year) filter.year = Number(year);
     if (category) filter.category = category;
+    if (tag) filter.tags = tag;
 
     let query = Event.find(filter);
 
@@ -251,17 +275,23 @@ const getPublishedEvents = async (req, res, next) => {
       query = query.find({ $text: { $search: search } });
     }
 
-    const events = await query.sort({ eventDate: -1 });
+    query = query.sort({ eventDate: -1 });
+
+    const { paginatedQuery, page, limit } = paginate(query, req);
+    const events = await paginatedQuery;
 
     for (let event of events) {
       await autoArchiveIfExpired(event);
     }
 
-    res.status(200).json({
+    const response = {
       success: true,
       count: events.length,
       data: events,
-    });
+    };
+    if (page) { response.page = page; response.limit = limit; }
+
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -319,7 +349,7 @@ const getSingleEvent = async (req, res, next) => {
 
 const getArchivedEvents = async (req, res, next) => {
   try {
-    const { year, category } = req.query;
+    const { year, category, tag } = req.query;
 
     let filter = {
       status: "archived",
@@ -328,14 +358,21 @@ const getArchivedEvents = async (req, res, next) => {
 
     if (year) filter.year = Number(year);
     if (category) filter.category = category;
+    if (tag) filter.tags = tag;
 
-    const events = await Event.find(filter).sort({ eventDate: -1 });
+    let query = Event.find(filter).sort({ eventDate: -1 });
 
-    res.status(200).json({
+    const { paginatedQuery, page, limit } = paginate(query, req);
+    const events = await paginatedQuery;
+
+    const response = {
       success: true,
       count: events.length,
       data: events,
-    });
+    };
+    if (page) { response.page = page; response.limit = limit; }
+
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
@@ -374,13 +411,19 @@ const getAllEvents = async (req, res, next) => {
     if (status) filter.status = status;
     if (approvalStatus) filter.approvalStatus = approvalStatus;
 
-    const events = await Event.find(filter).sort({ createdAt: -1 });
+    let query = Event.find(filter).sort({ createdAt: -1 });
 
-    res.status(200).json({
+    const { paginatedQuery, page, limit } = paginate(query, req);
+    const events = await paginatedQuery;
+
+    const response = {
       success: true,
       count: events.length,
       data: events,
-    });
+    };
+    if (page) { response.page = page; response.limit = limit; }
+
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }

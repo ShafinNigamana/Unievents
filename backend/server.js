@@ -12,6 +12,7 @@ const connectDB = require("./config/db");
 // Routes
 const eventRoutes = require("./routes/eventRoutes");
 const authRoutes = require("./routes/authRoutes");
+const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
 
@@ -65,6 +66,14 @@ app.get("/", (req, res) => {
   res.send("Unievents Backend Running");
 });
 
+app.get("/api/v1/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    service: "unievents-api",
+    timestamp: new Date().toISOString(),
+  });
+});
+
 /* =========================
    API ROUTES
 ========================= */
@@ -77,14 +86,7 @@ app.use("/api/v1/auth", authRoutes);
    GLOBAL ERROR HANDLER
 ========================= */
 
-app.use((err, req, res, next) => {
-  console.error("Unhandled Error:", err);
-
-  res.status(err.statusCode || 500).json({
-    success: false,
-    error: err.message || "Internal Server Error",
-  });
-});
+app.use(errorHandler);
 
 /* =========================
    SERVER START

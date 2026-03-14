@@ -14,7 +14,6 @@ const register = async (req, res) => {
       confirmPassword,
       role,
       enrollmentId,
-      phone,
     } = req.body;
 
     // 1️⃣ Required fields
@@ -67,16 +66,6 @@ const register = async (req, res) => {
       }
     }
 
-    // 5️⃣ Optional phone validation
-    if (phone) {
-      const phoneRegex = /^[0-9]{10}$/;
-      if (!phoneRegex.test(phone)) {
-        return res.status(400).json({
-          message: "Phone number must be 10 digits",
-        });
-      }
-    }
-
     // 6️⃣ Duplicate email check
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -95,7 +84,6 @@ const register = async (req, res) => {
       password: hashedPassword,
       role,
       enrollmentId: role === "student" ? enrollmentId : undefined,
-      phone,
     });
 
     return res.status(201).json({

@@ -1,0 +1,1043 @@
+﻿
+========== VISION & SCOPE.docx ==========
+
+VISION & SCOPE DOCUMENTUnievents - University Event Planning, Management & Digital Archive Platform
+Project VisionUnievents is designed as a centralized, structured, and secure digital platform for managing the complete lifecycle of university events.The system aims to replace fragmented event handling practices with a unified institutional solution that ensures consistency, accessibility, control, and long-term preservation of event data.The long-term vision is to transform university events from temporary activities into structured institutional records maintained within a controlled digital archive.
+Core ProblemUniversity event information is currently dispersed across multiple platforms such as temporary event websites, social media pages, shared cloud drives, and manual documentation systems.These methods create:
+Data fragmentation
+Duplication of information
+Poor traceability
+Loss of historical records
+Limited administrative oversight
+Lack of standardized documentationThere is no centralized system that manages event creation, lifecycle progression, and long-term archival in a structured manner.
+Primary ObjectiveTo develop a centralized web-based platform that enables:
+Structured event planning
+Controlled event management
+Role-based access enforcement
+Lifecycle-based event handling
+Secure data storage
+Searchable digital archival of all university eventsThe system must serve both operational requirements (event execution) and institutional requirements (historical preservation and oversight).
+Functional ScopeThe system will include:
+Authentication & Access Control
+Secure user registration and login
+JWT-based authentication
+Role-based authorization (Student, Organizer, Admin)
+Backend-enforced permission control
+Event Management
+Event creation, editing, deletion
+Ownership tracking
+Role-restricted modification
+Controlled publishing process
+Event Lifecycle Management
+Draft state
+Published state
+Archived state
+Enforced transition rules
+Read-only archival state
+Data Management
+Structured event schema
+Metadata storage
+Timestamps and audit tracking
+Centralized database storage
+Archive System
+Long-term event preservation
+Searchable archive
+Filterable event retrieval
+Organized historical record maintenance
+Administrative Control
+System-level visibility
+Moderation authority
+Role supervision (future-ready design)
+Non-Functional ScopeSecurity
+Backend as source of truth
+Password hashing
+Token-based authentication
+Route protection middleware
+Scalability
+Modular backend architecture
+Expandable schema design
+Future media storage compatibility
+Maintainability
+Clean folder structure
+Defined API contracts
+Clearly separated frontend and backend layers
+Out of ScopeThe following are intentionally excluded:
+Payment gateways
+Ticket booking systems
+Financial accounting modules
+Native mobile applications
+Enterprise ERP integration
+Paid cloud storage solutions
+System Design Principles
+Backend authority over frontend
+Role-based restriction enforcement
+Data integrity and consistency
+Lifecycle-driven event control
+Institutional archival preservation
+Minimal trust in client-side logic
+Target UsersStudents
+View-only access to published events
+Access to archive
+Organizers
+Create and manage owned events
+Control event lifecycle within permitted rules
+Administrators
+Full system-level oversight
+Override capabilities
+Supervisory control
+Constraints
+Academic semester timeline
+Free-tier hosting and database usage
+No paid third-party services
+Limited development resources
+Long-Term DirectionThe platform is architected not merely as a semester project but as a foundational institutional system that can evolve into a scalable university-wide event lifecycle and archival management solution.The system is designed to be extendable, modular, and adaptable for multi-institution deployment if required in the future.
+
+========== 0-Level Architecture Design.docx ==========
+
+Unievents - System Architecture Foundation Document
+Version 1
+1. Purpose
+This document defines the foundational structural architecture of Unievents.
+It explains:
+How the system is layered
+How components interact
+Where authority resides
+How security is enforced
+How data flows
+This is the base architectural reference before detailed modules are implemented.
+2. Architectural Overview
+Unievents follows a layered REST-based MERN architecture.
+The system consists of three primary layers:
+Frontend Layer
+Backend Layer
+Database Layer
+Each layer has clearly separated responsibilities.
+3. High-Level System Flow
+Client (Browser) React Frontend REST API (Express Backend) MongoDB Database
+All requests must pass through backend before accessing database.
+Frontend never communicates directly with database.
+4. Layer Responsibilities
+4.1 Frontend Layer
+Technology
+React.js
+Tailwind CSS
+JavaScript
+Responsibilities
+User interface rendering
+Form input handling
+Sending HTTP requests
+Storing JWT in localStorage
+Route protection using ProtectedRoute
+Conditional rendering based on role
+Frontend does not enforce business rules.It is presentation-only.
+4.2 Backend Layer
+Technology
+Node.js
+Express.js
+JWT
+bcrypt
+Responsibilities
+Authentication
+Registration
+Login
+JWT generation
+Authorization
+Role validation
+Ownership enforcement
+Lifecycle transition validation
+Business Logic
+Event lifecycle control
+Approval workflow
+Soft delete logic
+Archive automation
+Search filtering logic
+Security Model
+Stateless authentication (JWT)
+Middleware-based route protection
+Backend as single source of authority
+No trust in client role claims
+4.3 Database Layer
+Technology
+MongoDB (Atlas)
+Mongoose ODM
+Responsibilities
+Structured data storage
+Schema validation
+Enum enforcement
+Reference management
+Index optimization
+Collections
+Users
+Events
+Database stores state.Backend controls state transitions.
+5. Authentication Flow
+User submits credentials Backend verifies password JWT generated with userId and role Token returned to frontend Frontend stores token Token attached in Authorization header Backend validates token before protected route execution
+Token is required for all private routes.
+6. Authorization Model
+Three Roles
+Student
+Organizer
+Admin
+Authorization Enforcement Order
+JWT validation
+Role verification
+Ownership check
+Lifecycle state validation
+Soft delete status check
+Only after passing all layers does request reach controller logic.
+7. Event Lifecycle Architecture
+Each event contains:
+status (draft | published | archived)
+approvalStatus (pending | approved | rejected)
+isDeleted (soft delete flag)
+Lifecycle rules are enforced in backend only.
+Archived events are immutable.Soft-deleted events are excluded from normal queries.
+8. Request Processing Pattern
+Route JWT Middleware Role Middleware Ownership Middleware Lifecycle Validation Controller Database Operation Structured JSON Response
+All responses follow standardized response format.
+9. Security Principles
+No direct database exposure
+No business logic in frontend
+No role trust from client
+No destructive deletion without admin
+Immutable archive state
+Controlled lifecycle transitions
+10. Scalability Foundation
+Architecture supports:
+Media module integration
+Search indexing
+Analytics aggregation
+Multi-organizer support
+Google OAuth integration
+Multi-institution expansion
+Core structural contracts remain stable.
+11. Architectural Boundary Rules
+FrontendHandles UI only.
+BackendHandles rules, logic, validation, enforcement.
+DatabaseStores structured state only.
+No layer should violate its boundary.
+12. System Integrity Statement
+This 0-Level Architecture ensures:
+Clear separation of concerns
+Secure stateless authentication
+Strict role enforcement
+Lifecycle-driven event management
+Archive preservation
+Non-destructive data handling
+Long-term scalability
+
+========== API & REQUEST FLOW.docx ==========
+
+API & REQUEST FLOW SPECIFICATION
+Unievents - Backend Contract & Execution Model
+Version 1 (Strict RESTful Design)
+1. Purpose
+This document defines:
+All backend endpoints
+Request and response structure
+Authentication requirements
+Role enforcement per route
+Middleware execution flow
+Error response standards
+This document acts as the formal contract between frontend and backend.
+2. Base Configuration
+Base URL/api/v1
+Authentication MethodJWT via Authorization header
+Header FormatAuthorization: Bearer 
+All protected routes require valid JWT.
+3. Authentication Routes
+3.1 Register User
+POST /api/v1/auth/register
+AccessPublic
+Request Body
+{  "name",  "email",  "password",  "role": "student | organizer",  "enrollmentId": "(optional)"}
+Response (201 Created)
+{  "success": true,  "message": "User registered successfully"}
+Rules
+Admin role cannot be registered publicly
+Email must be unique
+Password must be hashed
+3.2 Login
+POST /api/v1/auth/login
+AccessPublic
+Request Body
+{  "email",  "password"}
+Response (200 OK)
+{  "success": true,  "token": "<jwt_token>",  "user": {    "id",    "name",    "role"  }}
+4. Event Routes
+Resource: eventsBase Path: /api/v1/events
+4.1 Create Event
+POST /api/v1/events
+AccessOrganizer, Admin
+Request Body
+{  "title",  "description",  "category",  "eventDate",  "startTime",  "endTime",  "venue",  "tags": "(optional)"}
+Response (201 Created)
+{  "success": true,  "data": "eventObject"}
+4.2 Get All Published Events
+GET /api/v1/events
+AccessPublic (or authenticated if policy requires)
+Query Parameters (optional)
+?year=2026
+?category=technical
+?status=published
+Returns only:
+published events
+not soft-deleted
+Response (200 OK)
+{  "success": true,  "count": "<number>",  "data": ["events"]}
+4.3 Get Single Event
+GET /api/v1/events/:id
+AccessDepends on status:
+draft  owner or admin
+published  all
+archived  all
+soft-deleted  admin only
+Response (200 OK)
+{  "success": true,  "data": "eventObject"}
+4.4 Update Event
+PUT /api/v1/events/:id
+AccessOrganizer (owner only), Admin
+Rules
+Cannot modify archived event (unless admin override)
+Cannot modify soft-deleted event
+Lifecycle validation required
+Response (200 OK)
+{  "success": true,  "data": "updatedEvent"}
+4.5 Change Event Status
+PATCH /api/v1/events/:id/status
+AccessOrganizer (owner), Admin
+Request Body
+{  "status": "published | archived"}
+Rules
+Must validate allowed transitions
+If approval enabled, publishing requires admin
+Response (200 OK)
+{  "success": true,  "data": "updatedEvent"}
+4.6 Soft Delete Event
+DELETE /api/v1/events/:id
+AccessOrganizer (owner), Admin
+Behavior
+Sets isDeleted = true
+Records deletedAt and deletedBy
+Response (200 OK)
+{  "success": true,  "message": "Event soft deleted"}
+4.7 Restore Soft Deleted Event
+PATCH /api/v1/events/:id/restore
+AccessAdmin only
+Response (200 OK)
+{  "success": true,  "message": "Event restored"}
+4.8 Admin Approval (If Workflow Enabled)
+PATCH /api/v1/events/:id/approve
+AccessAdmin
+Request Body
+{  "approvalStatus": "approved | rejected"}
+5. Dashboard-Specific Routes
+5.1 Get Organizer Events
+GET /api/v1/events/my
+AccessOrganizer
+Returns only:
+Events where createdBy = logged-in user
+Excludes soft-deleted
+5.2 Get Archived Events
+GET /api/v1/events/archive
+AccessPublic or authenticated
+Returns:
+status = archived
+isDeleted = false
+6. Standard Response Format
+Success Response
+{  "success": true,  "data": {...},  "message": "(optional)"}
+Error Response
+{  "success": false,  "error": "Error message"}
+HTTP Status Codes
+200 - Success
+201 - Created
+400 - Validation error
+401 - Unauthorized
+403 - Forbidden
+404 - Not found
+500 - Server error
+7. Middleware Execution Flow
+Every protected route follows:
+Route JWT Authentication Middleware Role Middleware Ownership Middleware (if required) Lifecycle Validation Controller Logic Database Operation Response
+If any middleware fails, request is terminated.
+8. Query Filtering Rules
+All event queries must automatically filter:
+isDeleted = false
+Unless route is admin-specific restore view.
+9. Security Enforcement Summary
+No route trusts frontend role
+JWT must be validated for all protected routes
+Ownership enforced before modification
+Lifecycle transitions validated server-side
+Archived events locked
+Soft delete prevents permanent data loss
+10. Architectural Integrity
+This RESTful API structure ensures:
+Clean resource-based routing
+Predictable endpoint patterns
+Clear separation of action types
+Scalability for new modules
+Easy integration with frontend
+This document now locks:
+Backend-Frontend contract
+Route structure
+Middleware flow
+Lifecycle enforcement via endpoints
+Soft delete behavior
+
+========== Behavioral Document.docx ==========
+
+ACCESS CONTROL & LIFECYCLE SPECIFICATION
+Unievents - Behavioral Intelligence Document
+Version 1
+1. Purpose
+This document defines:
+Role-based permissions
+Ownership enforcement
+Event lifecycle behavior
+State transition authority
+Archive control
+Soft delete authority
+This document governs backend behavior and must be strictly enforced in server logic.
+2. System Roles
+The system defines three roles:
+Student
+Organizer
+Admin
+All permissions are derived from these roles.
+3. Role Definitions
+Student
+View published events
+View archived events
+Cannot create events
+Cannot modify events
+Cannot delete events
+No lifecycle authority
+Organizer
+Create events
+Edit own events (draft or published)
+Submit events for approval (if workflow enabled)
+Archive own events (if allowed by policy)
+Soft delete own events (if allowed by policy)
+Cannot modify other organizers' events
+Cannot approve events
+Admin
+View all events
+Edit any event (except locked archive if policy restricts)
+Approve or reject events (if workflow enabled)
+Archive any event
+Restore archived events (optional policy)
+View and restore soft-deleted events
+Override ownership restrictions
+4. Ownership Rules
+Each event must contain:
+createdBy  reference to User
+Ownership Enforcement Rules:
+Organizer can modify only events where createdBy equals their userId.
+Organizer cannot modify events created by others.
+Admin bypasses ownership restriction.
+Student has no modification rights.
+Ownership is validated in backend middleware before controller execution.
+5. Event Lifecycle States
+Each event must contain:
+status (Enum):
+draft
+published
+archived
+Optional workflow layer:
+approvalStatus (pending, approved, rejected)
+6. Lifecycle Visibility Rules
+Draft
+Visible only to creator and admin
+Not visible to students
+Not included in public queries
+Published
+Visible to all users
+Included in main event listings
+Editable by owner or admin
+Archived
+Visible in archive section
+Read-only
+Cannot be modified by organizer
+Admin modification allowed only if explicitly permitted
+Soft Deleted
+Not visible in any public query
+Only visible to admin
+Can be restored by admin
+7. Lifecycle Transition Rules
+Without Approval Workflow
+draft  published
+published  archived
+Not Allowed
+archived  draft
+archived  published
+With Approval Workflow Enabled
+draft  pending approval
+pending approval  approved  published
+pending approval  rejected  draft
+published  archived
+8. Transition Authority
+Draft  Published
+If approval disabled:
+Organizer (owner) or Admin
+If approval enabled:
+Admin approval required
+Published  Archived
+Organizer (owner) or Admin
+Archived  Restore
+Admin only (if policy allows)
+Soft Delete
+Organizer (owner) or Admin
+Restore Soft Delete
+Admin only
+9. Soft Delete Behavior
+Soft delete does not remove record permanently.
+On soft delete:
+isDeleted = true
+deletedAt recorded
+deletedBy recorded
+System Behavior:
+Excluded from all normal queries
+Not visible in dashboards
+Admin can view via special query
+Admin can restore by setting isDeleted = false
+Permanent deletion should be restricted to admin only, if implemented at all.
+10. Archive Locking Policy
+Archived events are locked.
+Rules:
+Organizer cannot modify archived event.
+Organizer cannot revert archive state.
+Admin may restore if policy allows.
+Archived events cannot be deleted without admin authority.
+Archive locking ensures institutional integrity.
+11. Permission Matrix (Simplified)
+Action
+Student
+Organizer (Own)
+Organizer (Other)
+Admin
+Create Event
+No
+Yes
+No
+Yes
+Edit Draft
+No
+Yes
+No
+Yes
+Edit Published
+No
+Yes
+No
+Yes
+Archive Event
+No
+Yes
+No
+Yes
+Approve Event
+No
+No
+No
+Yes
+Soft Delete
+No
+Yes
+No
+Yes
+Restore Soft Delete
+No
+No
+No
+Yes
+View Draft
+No
+Yes
+No
+Yes
+View Published
+Yes
+Yes
+Yes
+Yes
+View Archived
+Yes
+Yes
+Yes
+Yes
+12. Enforcement Order in Backend
+For protected operations, backend must validate in this order:
+JWT authentication
+Role validation
+Ownership check
+Lifecycle state validation
+Soft delete status check
+If any check fails, request must be rejected.
+13. Edge Case Policies
+Organizer cannot publish event already archived.
+Organizer cannot edit soft-deleted event.
+Admin cannot approve already archived event.
+Deleted and archived states must not conflict.
+Lifecycle transition must be atomic and validated.
+14. System Integrity Guarantee
+This specification ensures:
+Controlled event behavior
+No unauthorized modification
+Institutional archival stability
+Clear authority hierarchy
+Predictable state transitions
+This document defines the behavioral logic of the system.
+
+========== DATABASE DESIGN V1&V2.docx ==========
+
+DATABASE DESIGN DOCUMENT
+Version 1 + Version 2 (Core + Controlled Institutional Model)
+Unievents - Unified Database Architecture Specification
+1. Database Overview
+Database: MongoDB (Atlas)Architecture Style: Reference-based modelingCollections: Users, Events
+This document defines the complete database structure required to support:
+Secure authentication
+Role-based authorization
+Ownership enforcement
+Lifecycle control
+Soft deletion
+Administrative moderation readiness
+This version combines foundational design (V1) and structural control enhancements (V2) into a unified core-ready model.
+2. Design Principles
+Backend enforces all rules.
+Lifecycle state must be explicit and validated.
+No permanent destructive operations without control.
+Archive must remain in the same collection.
+All critical transitions must be auditable.
+Database must support institutional growth.
+3. USERS COLLECTION
+Purpose
+Stores authentication credentials and system roles.
+Schema Structure (Conceptual)
+Identification
+_id (ObjectId)
+Profile Fields
+name (String, required)
+email (String, required, unique, indexed)
+password (String, required, hashed)
+role (Enum: student, organizer, admin, required)
+enrollmentId (String, optional, student-only)
+System Control
+isActive (Boolean, default true)
+isDeleted (Boolean, default false)
+createdAt (Date)
+updatedAt (Date)
+Rules
+Email must be unique.
+Password must be hashed.
+Role must match enum.
+Admin cannot be assigned via public registration.
+Soft delete uses isDeleted flag.
+4. EVENTS COLLECTION
+Purpose
+Core lifecycle-driven institutional event storage.
+Schema Structure (Conceptual)
+Identification
+_id (ObjectId)
+title (String, required)
+description (String, required)
+category (String, required)
+tags (Array of Strings, optional)
+Ownership
+createdBy (ObjectId reference  Users, required)
+Scheduling
+eventDate (Date, required)
+startTime (String or Date)
+endTime (String or Date)
+venue (String)
+Lifecycle Control
+status (Enum: draft, published, archived, required)
+publishedAt (Date, nullable)
+archivedAt (Date, nullable)
+Moderation (Version 2 Addition)
+approvalStatus (Enum: pending, approved, rejected, default pending)
+approvedBy (ObjectId reference  Users, nullable)
+approvedAt (Date, nullable)
+Soft Delete Control
+isDeleted (Boolean, default false)
+deletedAt (Date, nullable)
+deletedBy (ObjectId reference  Users, nullable)
+Audit Fields
+createdAt (Date)
+updatedAt (Date)
+Archive Intelligence
+year (Number, derived from eventDate)
+semester (String, optional)
+5. Lifecycle Model
+States
+draft
+published
+archived
+Allowed Transitions
+draft  published
+published  archived
+If approval workflow enabled:
+draft  pending approval  approved  published
+Not Allowed
+archived  draft
+archived  published
+Archived events are immutable except admin override.
+6. Soft Delete Strategy
+Events are never permanently removed immediately.
+Instead:
+isDeleted = true
+deletedAt recorded
+deletedBy recorded
+Deleted events:
+Not visible in normal queries
+Accessible only to admin if required
+Can be restored if necessary
+This ensures institutional safety and audit traceability.
+7. Relationship Model
+Users (1)  (Many) Events
+Events reference creator via createdBy.
+Approval and deletion actions also reference Users.
+No event embedding inside user documents.
+8. Indexing Strategy
+Users
+email (unique index)
+Events
+status (index)
+eventDate (index)
+createdBy (index)
+approvalStatus (index)
+isDeleted (index)
+year (optional optimization)
+Purpose
+Fast dashboard filtering
+Archive retrieval
+Efficient moderation queries
+Scalable growth
+9. Ownership & Permission Rules
+Student
+Read-only access to published events
+Organizer
+Create events
+Edit own draft/published events
+Cannot modify archived events
+Cannot approve events
+Admin
+View all events
+Approve or reject events
+Archive events
+Restore soft-deleted events
+Override lifecycle if necessary
+All enforcement occurs in backend.
+10. Archive Strategy
+Archive is not separate collection.
+Archived events remain in Events collection with:
+status = archived
+Archive filtering based on:
+status
+year
+category
+eventDate
+11. Data Integrity Rules
+createdBy must always reference valid user.
+approvalStatus required before publish (if enabled).
+Soft-deleted events excluded from normal queries.
+Archived events are locked from modification.
+All state transitions validated server-side.
+12. System Maturity Level
+This unified design supports:
+Secure authentication
+Role enforcement
+Ownership logic
+Lifecycle intelligence
+Moderation readiness
+Institutional archive protection
+Non-destructive deletion
+Future scalability
+This document now represents:
+Core Production-Level Database DesignSuitable for implementation without structural changes.
+
+========== IMPLEMENTATION BLUEPRINT.docx ==========
+
+IMPLEMENTATION BLUEPRINT
+Unievents - Core Execution & Phase Control Plan
+Version 1
+Purpose
+This document defines:
+What must be implemented in core
+Feature grouping order
+Execution priority
+Risk control checkpoints
+Completion criteria
+This ensures the project moves from structured design to controlled execution without architectural breakage.
+Core System Implementation Order
+Stage 1 - Database Finalization
+Implement final User schema
+Implement final Event schema
+Add approvalStatus field
+Add soft delete fields
+Add lifecycle status field
+Add required indexes
+CheckpointDatabase must fully match Unified Database Design document before moving forward.
+Stage 2 - Middleware Layer Enforcement
+JWT middleware
+Role middleware
+Ownership middleware
+Lifecycle validation middleware
+Soft delete filtering middleware
+CheckpointNo controller should directly modify database without passing lifecycle validation.
+Stage 3 - Event Lifecycle Logic
+Implement:
+Draft creation
+Submit for approval
+Admin approval
+Publish after approval
+Automatic archive job
+Manual archive route
+Restore soft delete route
+Automatic Archive RuleIf current date > eventDate and status = published system sets status = archived
+Implementation can use:
+Scheduled cron job
+On-read validation check
+CheckpointArchived events must become immutable.
+Stage 4 - Search & Filtering System
+Searchable Fields:
+title
+description
+category
+tags
+Filtering Options:
+year
+category
+status
+archived
+approvalStatus
+Query Requirements:
+Must exclude soft-deleted
+Must respect lifecycle visibility rules
+CheckpointSearch must not expose draft or pending events to students.
+Stage 5 - Role-Based Dashboard Integration
+Organizer Dashboard
+My Events
+Draft Events
+Pending Approval
+Published
+Archived
+Admin Dashboard
+All events
+Pending approvals
+Soft-deleted events
+Archive management
+Student Dashboard
+Published events
+Archived events
+CheckpointDashboards must use filtered API endpoints only.
+Stage 6 - Permanent Deletion Control
+Permanent deletion policy:
+Only admin
+Only soft-deleted events
+Requires explicit endpoint
+Hard delete must not be default behavior.
+Validation Requirements
+Must validate:
+Lifecycle transitions
+Ownership
+Approval before publish
+Soft delete protection
+Archive immutability
+Role-based restrictions
+Required fields
+All validation must be backend enforced.
+Risk Control Policies
+No schema changes after Stage 1 without documentation update.
+No controller logic without middleware validation.
+No direct status update without transition validation.
+No permanent delete without admin authorization.
+No lifecycle bypass from frontend.
+Definition of "Core Project Complete"
+Core project is considered complete only if:
+Approval workflow implemented
+Lifecycle fully enforced
+Soft delete operational
+Automatic archive functional
+Search across metadata operational
+Role-based dashboards integrated
+API contract respected
+If any of these are missing, system remains prototype.
+Future Work Separation
+The following are intentionally excluded from core:
+Media upload system
+Analytics dashboards
+Multi-organizer collaboration
+Multi-university support
+Advanced reporting tools
+These belong to Future Expansion Blueprint.
+Architectural Stability Outcome
+After completing this blueprint:
+System becomes lifecycle-driven
+Archive becomes institutional-grade
+Deletion becomes non-destructive
+Authorization becomes layered
+REST structure remains clean
+No structural redesign required later
+
+========== FUTURE EXPANSION BLUEPRINT.docx ==========
+
+FUTURE EXPANSION BLUEPRINT
+Unievents - Long-Term Architectural Evolution Plan
+Version 1
+1. Purpose
+This document defines structured future growth paths beyond the core institutional system.
+The goal is to ensure:
+No future feature requires database redesign
+No architectural restructuring is needed
+The system can scale academically and institutionally
+Expansion remains modular and controlled
+Core system remains stable. Expansion layers attach without breaking foundation.
+2. Expansion Philosophy
+All future features must:
+Respect lifecycle model
+Respect ownership rules
+Respect soft delete logic
+Respect role-based access
+Remain modular
+No future feature should modify core structural contracts (API base, lifecycle enum, role enum).
+3. Media Management Module
+Purpose
+Attach structured media to events.
+Future Additions
+Media array in Events collection
+{  "type": "image | video | document",  "url": "string",  "uploadedBy": "userId",  "uploadedAt": "timestamp"}
+Storage Options
+Cloud storage integration
+Local storage abstraction layer
+Rules
+Media cannot be added to archived events
+Media deletion follows soft-delete principles
+Admin can moderate media
+Architectural Impact
+No schema redesign required. Only field extension.
+4. Event Planning Tools Module
+Purpose
+Add operational planning intelligence.
+Future Additions
+Checklist array
+Task assignment to organizers
+Agenda structure
+Internal notes (organizer/admin only)
+Example Fields
+checklist: [  {    "title": "string",    "completed": "boolean",    "assignedTo": "userId",    "dueDate": "date"  }]
+Rules
+Only organizers and admin access planning tools
+Students cannot view internal planning
+Architectural Impact
+Stored as embedded arrays inside Event document.
+5. Analytics & Metrics Module
+Purpose
+Provide institutional performance visibility.
+Future Metrics
+Total events per year
+Category distribution
+Organizer activity metrics
+Archive growth trends
+Event publication frequency
+Implementation Approach
+Aggregation pipelines in MongoDB
+Optional separate analytics collection
+Rules
+Analytics must not modify core event data.
+6. Advanced Search & Indexing
+Purpose
+Improve archive intelligence.
+Future Enhancements
+Full-text search indexing
+Search relevance scoring
+Advanced filters (date ranges, semester)
+Pagination and sorting optimization
+Possible Tools
+MongoDB text index
+External search engine (if scaled)
+Architectural Impact
+No schema redesign required.
+7. Multi-Organizer Collaboration
+Purpose
+Allow multiple organizers to manage one event.
+Future Additions
+organizers: [ObjectId references to Users]
+Rules
+Ownership becomes shared
+Lifecycle authority defined by role hierarchy
+Admin retains override authority
+Architectural Impact
+Extend ownership logic without changing lifecycle model.
+8. Multi-University / SaaS Scalability
+Purpose
+Expand beyond single institution.
+Future Additions
+University collection
+Events reference universityId
+Role scoped per university
+Design Impact
+System must isolate data per institution.
+Current schema allows this through reference extension.
+9. Activity Logs & Audit Trails
+Purpose
+Track institutional accountability.
+Future Additions
+ActivityLog collection:
+{  "userId": "ObjectId",  "actionType": "string",  "targetId": "ObjectId",  "timestamp": "datetime",  "metadata": "object"}
+Tracks:
+Status changes
+Approvals
+Deletions
+Restorations
+Architectural Impact
+Separate collection. No impact on core schema.
+10. Notification System
+Purpose
+Improve user interaction.
+Future Additions
+Email notifications
+In-app notifications
+Approval notifications
+Archive notifications
+Separate Notification collection.
+11. Reporting & Export Tools
+Purpose
+Institutional documentation support.
+Future Additions
+PDF event reports
+Year-wise archive export
+CSV export of events
+Accreditation-ready reports
+These are read-only modules.
+12. Security Expansion
+Future Hardening Options
+Refresh tokens
+Role hierarchy expansion
+Permission-based granular control
+Rate limiting
+Account lock after failed attempts
+13. Architectural Stability Guarantee
+The current core system already supports:
+Field extension
+New collections
+Modular services
+Additional middleware layers
+No redesign is required for expansion if core blueprint is followed strictly.
+14. Expansion Phases
+Phase 3
+Search optimization
+Media module
+Analytics
+Phase 4
+Collaboration tools
+Notification system
+Audit logs
+Phase 5
+Multi-university support
+SaaS architecture
+15. Long-Term Vision Alignment
+After full expansion, Unievents becomes:
+A lifecycle-driven institutional event intelligence platform with archival preservation, analytics insight, and scalable architecture.
