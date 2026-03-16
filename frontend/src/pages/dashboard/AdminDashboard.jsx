@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import {
   ShieldCheck, CheckCircle2, XCircle, RotateCcw, Trash2,
   AlertCircle, Archive, Calendar, Eye, Loader2,
-  Users, TrendingUp, Clock, FileX
+  Users, TrendingUp, Clock, FileX, Star
 } from "lucide-react";
 import Layout from "../../components/layout/Layout";
 import Badge from "../../components/ui/Badge";
@@ -76,6 +76,7 @@ function EventsTable({ events, actions }) {
             <th className="text-left px-6 py-3 font-medium">Event</th>
             <th className="text-left px-4 py-3 font-medium">Date</th>
             <th className="text-left px-4 py-3 font-medium">Status</th>
+            <th className="text-left px-4 py-3 font-medium">Rating</th>
             <th className="text-left px-4 py-3 font-medium">Approval</th>
             <th className="text-right px-6 py-3 font-medium">Actions</th>
           </tr>
@@ -84,17 +85,44 @@ function EventsTable({ events, actions }) {
           {events.map((event) => (
             <tr key={event._id} className="hover:bg-white/3 transition-colors group">
               <td className="px-6 py-4">
-                <p className="font-medium text-white text-sm leading-snug group-hover:text-brand-300 transition-colors">
-                  {event.title}
-                </p>
-                {event.category && (
-                  <p className="text-xs text-slate-500 mt-0.5">{event.category}</p>
-                )}
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-600/20 to-purple-600/20">
+                    {event.posterUrl ? (
+                      <img src={event.posterUrl} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <Calendar className="w-4 h-4 text-brand-500/40" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-white text-sm leading-snug group-hover:text-brand-300 transition-colors truncate">
+                      {event.title}
+                    </p>
+                    {event.category && (
+                      <p className="text-xs text-slate-500 mt-0.5">{event.category}</p>
+                    )}
+                  </div>
+                </div>
               </td>
               <td className="px-4 py-4 text-slate-400 whitespace-nowrap text-xs">
                 {fmtDate(event.eventDate)}
+                {event.endDate && (
+                  <span className="text-slate-500"> – {fmtDate(event.endDate)}</span>
+                )}
               </td>
               <td className="px-4 py-4"><Badge type="status" value={event.status} /></td>
+              <td className="px-4 py-4 whitespace-nowrap text-xs">
+                {event.reviewCount > 0 ? (
+                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 w-fit">
+                    <Star size={10} className="text-amber-400 fill-amber-400" />
+                    <span className="font-bold text-amber-300">{event.averageRating}</span>
+                    <span className="text-amber-300/60 font-medium">({event.reviewCount})</span>
+                  </div>
+                ) : (
+                  <span className="text-slate-600 text-sm">—</span>
+                )}
+              </td>
               <td className="px-4 py-4"><Badge type="approval" value={event.approvalStatus} /></td>
               <td className="px-6 py-4">
                 <div className="flex items-center gap-1 justify-end flex-wrap">

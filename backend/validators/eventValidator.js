@@ -9,10 +9,13 @@ const createEventSchema = z.object({
   description: z.string().min(5, "Description must be at least 5 characters"),
   category: z.string().min(2, "Category is required"),
   eventDate: z.string(),
+  endDate: z.string().optional().nullable(),
   startTime: z.string().optional(),
   endTime: z.string().optional(),
-  venue: z.string().optional(),
+  venue: z.string().optional().nullable(),
   tags: z.array(z.string()).optional(),
+  posterUrl: z.string().url().optional().nullable(),
+  posterPublicId: z.string().optional().nullable(),
 });
 
 /* =========================

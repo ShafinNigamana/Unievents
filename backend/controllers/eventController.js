@@ -42,10 +42,13 @@ const createEvent = async (req, res, next) => {
       description,
       category,
       eventDate,
+      endDate,
       startTime,
       endTime,
       venue,
       tags,
+      posterUrl,
+      posterPublicId,
     } = req.body;
 
     const event = await Event.create({
@@ -53,10 +56,13 @@ const createEvent = async (req, res, next) => {
       description,
       category,
       eventDate,
+      endDate: endDate || null,
       startTime,
       endTime,
       venue,
       tags,
+      posterUrl,
+      posterPublicId,
       createdBy: req.user.id,
       status: "draft",
       approvalStatus: "pending",

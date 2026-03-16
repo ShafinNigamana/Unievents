@@ -23,10 +23,10 @@ const app = express();
 // Security headers
 app.use(helmet());
 
-// Rate limiting (Production safe)
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: 500, // generous limit for development
 });
 app.use(limiter);
 
@@ -81,6 +81,11 @@ app.get("/api/v1/health", (req, res) => {
 // IMPORTANT: Updated base path to match documentation
 app.use("/api/v1/events", eventRoutes);
 app.use("/api/v1/auth", authRoutes);
+
+const uploadRoutes = require("./routes/uploadRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
+app.use("/api/v1/uploads", uploadRoutes);
+app.use("/api/v1/reviews", reviewRoutes);
 
 /* =========================
    GLOBAL ERROR HANDLER

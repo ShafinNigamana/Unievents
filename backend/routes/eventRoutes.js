@@ -16,7 +16,7 @@ const {
   getSoftDeletedEvents,
 } = require("../controllers/eventController");
 
-const { protect } = require("../middleware/authMiddleware");
+const { protect, optionalAuth } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
 const { checkOwnership } = require("../middleware/ownershipMiddleware");
 const { validateLifecycle } = require("../middleware/lifecycleMiddleware");
@@ -162,6 +162,6 @@ router.patch(
    SINGLE EVENT (KEEP LAST)
 ========================= */
 
-router.get("/:id", getSingleEvent);
+router.get("/:id", optionalAuth, getSingleEvent);
 
 module.exports = router;

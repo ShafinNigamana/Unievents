@@ -33,6 +33,30 @@ const eventSchema = new mongoose.Schema(
       },
     ],
 
+    posterUrl: {
+      type: String,
+      default: null,
+    },
+
+    posterPublicId: {
+      type: String,
+      default: null,
+    },
+
+    /* =========================
+       RATINGS
+    ========================= */
+
+    averageRating: {
+      type: Number,
+      default: 0,
+    },
+
+    reviewCount: {
+      type: Number,
+      default: 0,
+    },
+
     /* =========================
        OWNERSHIP
     ========================= */
@@ -52,6 +76,11 @@ const eventSchema = new mongoose.Schema(
       type: Date,
       required: true,
       index: true,
+    },
+
+    endDate: {
+      type: Date,
+      default: null,
     },
 
     startTime: {

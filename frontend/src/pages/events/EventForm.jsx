@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   FileText, Calendar, Clock, MapPin, Tag, X,
-  Plus, Loader2, Save, ArrowLeft, Hash
+  Plus, Loader2, Save, ArrowLeft, Hash, ImagePlus, Upload,
+  CalendarRange, MapPinOff
 } from "lucide-react";
 import Layout from "../../components/layout/Layout";
 import { PageLoader } from "../../components/ui/Spinner";
@@ -18,6 +19,7 @@ const EMPTY = {
   description: "",
   category: "",
   eventDate: "",
+  endDate: "",
   startTime: "",
   endTime: "",
   venue: "",
@@ -48,6 +50,17 @@ export default function EventForm({ editMode = false }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  /* ── Poster upload state ── */
+  const [posterUrl, setPosterUrl] = useState(null);
+  const [posterPublicId, setPosterPublicId] = useState(null);
+  const [posterPreview, setPosterPreview] = useState(null);
+  const [posterUploading, setPosterUploading] = useState(false);
+
+  /* ── Multi-day + Venue TBD + Time toggle ── */
+  const [isMultiDay, setIsMultiDay] = useState(false);
+  const [venueTBD, setVenueTBD] = useState(false);
+  const [showTime, setShowTime] = useState(false);
+
   /* ── Load existing event in edit mode ── */
   useEffect(() => {
     if (!editMode || !id) return;
@@ -62,11 +75,20 @@ export default function EventForm({ editMode = false }) {
           description: e.description ?? "",
           category: e.category ?? "",
           eventDate: e.eventDate ? e.eventDate.slice(0, 10) : "",
+          endDate: e.endDate ? e.endDate.slice(0, 10) : "",
           startTime: e.startTime ?? "",
           endTime: e.endTime ?? "",
           venue: e.venue ?? "",
           tags: e.tags ?? [],
         });
+        if (e.endDate) setIsMultiDay(true);
+        if (e.venue === "To be announced") setVenueTBD(true);
+        if (e.startTime || e.endTime) setShowTime(true);
+        if (e.posterUrl) {
+          setPosterUrl(e.posterUrl);
+          setPosterPublicId(e.posterPublicId);
+          setPosterPreview(e.posterUrl);
+        }
       } catch {
         setError("Could not load event for editing.");
       } finally {
@@ -93,6 +115,40 @@ export default function EventForm({ editMode = false }) {
     if (e.key === "Enter") { e.preventDefault(); addTag(); }
   };
 
+  /* ── Poster upload ── */
+  const handlePosterSelect = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Client-side preview
+    setPosterPreview(URL.createObjectURL(file));
+    setPosterUploading(true);
+    setError("");
+
+    try {
+      const formData = new FormData();
+      formData.append("poster", file);
+
+      const res = await api.post("/uploads/event-poster", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      setPosterUrl(res.data.posterUrl);
+      setPosterPublicId(res.data.posterPublicId);
+    } catch (err) {
+      setError(err.response?.data?.error || "Poster upload failed.");
+      setPosterPreview(null);
+    } finally {
+      setPosterUploading(false);
+    }
+  };
+
+  const removePoster = () => {
+    setPosterUrl(null);
+    setPosterPublicId(null);
+    setPosterPreview(null);
+  };
+
   /* ── Validate client-side ── */
   const validate = () => {
     if (!form.title.trim() || form.title.trim().length < 3)
@@ -103,6 +159,8 @@ export default function EventForm({ editMode = false }) {
       return "Category is required.";
     if (!form.eventDate)
       return "Event date is required.";
+    if (isMultiDay && form.endDate && form.endDate < form.eventDate)
+      return "End date must be on or after start date.";
     if (form.startTime && form.endTime && form.endTime <= form.startTime)
       return "End time must be after start time.";
     return null;
@@ -122,10 +180,13 @@ export default function EventForm({ editMode = false }) {
       description: form.description.trim(),
       category: form.category,
       eventDate: form.eventDate,
+      endDate: isMultiDay && form.endDate ? form.endDate : null,
       startTime: form.startTime || undefined,
       endTime: form.endTime || undefined,
-      venue: form.venue.trim() || undefined,
+      venue: venueTBD ? "To be announced" : (form.venue.trim() || null),
       tags: form.tags.length ? form.tags : undefined,
+      posterUrl: posterUrl || undefined,
+      posterPublicId: posterPublicId || undefined,
     };
 
     try {
@@ -208,25 +269,26 @@ export default function EventForm({ editMode = false }) {
             />
           </Field>
 
-          {/* Category + Date side-by-side */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Category" required>
-              <div className="relative">
-                <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                <select
-                  value={form.category}
-                  onChange={set("category")}
-                  className="select pl-10 appearance-none"
-                >
-                  <option value="">Select category</option>
-                  {CATEGORIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-              </div>
-            </Field>
+          {/* Category */}
+          <Field label="Category" required>
+            <div className="relative">
+              <Tag className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              <select
+                value={form.category}
+                onChange={set("category")}
+                className="select pl-10 appearance-none"
+              >
+                <option value="">Select category</option>
+                {CATEGORIES.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+          </Field>
 
-            <Field label="Event Date" required>
+          {/* Date row — Start Date + End Date horizontal */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Field label={isMultiDay ? "Start Date" : "Event Date"} required>
               <div className="relative">
                 <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                 <input
@@ -238,9 +300,63 @@ export default function EventForm({ editMode = false }) {
                 />
               </div>
             </Field>
+
+            {isMultiDay && (
+              <Field label="End Date">
+                <div className="relative">
+                  <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <input
+                    type="date"
+                    value={form.endDate}
+                    onChange={set("endDate")}
+                    min={form.eventDate}
+                    className="input pl-10"
+                    style={{ colorScheme: "dark" }}
+                  />
+                </div>
+              </Field>
+            )}
           </div>
 
-          {/* Start + End time */}
+          {/* Toggle buttons row */}
+          <div className="flex items-center gap-3 flex-wrap">
+            <button
+              type="button"
+              onClick={() => {
+                setIsMultiDay(!isMultiDay);
+                if (isMultiDay) setForm((f) => ({ ...f, endDate: "" }));
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+                         border transition-all ${
+                           isMultiDay
+                             ? "bg-brand-500/15 text-brand-300 border-brand-500/30"
+                             : "bg-white/5 text-slate-400 border-white/10 hover:border-white/20"
+                         }`}
+            >
+              <CalendarRange className="w-3.5 h-3.5" />
+              Multi-day event
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setShowTime(!showTime);
+                if (showTime) setForm((f) => ({ ...f, startTime: "", endTime: "" }));
+              }}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium
+                         border transition-all ${
+                           showTime
+                             ? "bg-brand-500/15 text-brand-300 border-brand-500/30"
+                             : "bg-white/5 text-slate-400 border-white/10 hover:border-white/20"
+                         }`}
+            >
+              <Clock className="w-3.5 h-3.5" />
+              Add specific time
+            </button>
+          </div>
+
+          {/* Start + End time — only shown when toggled */}
+          {showTime && (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Start Time">
               <div className="relative">
@@ -268,18 +384,46 @@ export default function EventForm({ editMode = false }) {
               </div>
             </Field>
           </div>
+          )}
 
           {/* Venue */}
           <Field label="Venue" hint="Hall, auditorium, or online platform name">
-            <div className="relative">
-              <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-              <input
-                type="text"
-                placeholder="e.g. Main Auditorium, Block A"
-                value={form.venue}
-                onChange={set("venue")}
-                className="input pl-10"
-              />
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="relative flex-1">
+                  <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder={venueTBD ? "Venue to be announced" : "e.g. Main Auditorium, Block A"}
+                    value={venueTBD ? "" : form.venue}
+                    onChange={set("venue")}
+                    disabled={venueTBD}
+                    className={`input pl-10 ${venueTBD ? "opacity-40 cursor-not-allowed" : ""}`}
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setVenueTBD(!venueTBD);
+                    if (!venueTBD) setForm((f) => ({ ...f, venue: "" }));
+                  }}
+                  className={`inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium
+                             border transition-all whitespace-nowrap ${
+                               venueTBD
+                                 ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
+                                 : "bg-white/5 text-slate-400 border-white/10 hover:border-white/20"
+                             }`}
+                >
+                  <MapPinOff className="w-3.5 h-3.5" />
+                  {venueTBD ? "TBD" : "Not decided?"}
+                </button>
+              </div>
+              {venueTBD && (
+                <p className="text-xs text-amber-400/80 flex items-center gap-1.5">
+                  <MapPinOff className="w-3 h-3" />
+                  Venue will display as "To be announced"
+                </p>
+              )}
             </div>
           </Field>
 
@@ -333,6 +477,55 @@ export default function EventForm({ editMode = false }) {
                 </div>
               )}
             </div>
+          </Field>
+
+          {/* Event Poster */}
+          <Field label="Event Poster" hint="JPG, PNG, or WebP. Max 5 MB.">
+            {posterPreview ? (
+              <div className="relative group/poster">
+                <img
+                  src={posterPreview}
+                  alt="Poster preview"
+                  className="w-full max-h-64 object-cover rounded-xl border border-white/10"
+                />
+                {posterUploading && (
+                  <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 text-brand-400 animate-spin" />
+                  </div>
+                )}
+                {!posterUploading && (
+                  <button
+                    type="button"
+                    onClick={removePoster}
+                    className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 text-red-400
+                               hover:text-white hover:bg-red-500/60 transition-all
+                               opacity-0 group-hover/poster:opacity-100"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+            ) : (
+              <label
+                className="flex flex-col items-center justify-center gap-3 p-8 rounded-xl
+                           border-2 border-dashed border-white/15 hover:border-brand-500/40
+                           bg-white/3 hover:bg-brand-500/5 cursor-pointer transition-all"
+              >
+                <div className="p-3 rounded-xl bg-brand-500/10">
+                  <ImagePlus className="w-6 h-6 text-brand-400" />
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-slate-300 font-medium">Click to upload poster</p>
+                  <p className="text-xs text-slate-500 mt-0.5">or drag and drop</p>
+                </div>
+                <input
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handlePosterSelect}
+                  className="hidden"
+                />
+              </label>
+            )}
           </Field>
 
           {/* Divider */}
