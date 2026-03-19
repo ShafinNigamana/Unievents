@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Clock, Tag, ArrowRight } from "lucide-react";
+import { Calendar, MapPin, Clock, Tag, ArrowRight, Star } from "lucide-react";
 import Badge from "./Badge";
 
 function formatDate(dateStr) {
@@ -68,7 +68,7 @@ export default function EventCard({ event, onClick }) {
 
           {event.reviewCount > 0 && (
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20">
-              <StarIcon size={12} className="text-amber-400 fill-amber-400" />
+              <Star size={12} className="text-amber-400 fill-amber-400" />
               <span className="text-[11px] font-bold text-amber-300">{event.averageRating}</span>
               <span className="text-[10px] text-amber-300/60">({event.reviewCount})</span>
             </div>
