@@ -7,6 +7,7 @@ import {
 import Layout from "../../components/layout/Layout";
 import EventCard from "../../components/ui/EventCard";
 import { SkeletonGrid } from "../../components/ui/Spinner";
+import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
 
 const CATEGORIES = [
@@ -16,6 +17,8 @@ const CATEGORIES = [
 
 export default function Events({ archive = false }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isStudent = user?.role === "student";
 
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -24,6 +27,19 @@ export default function Events({ archive = false }) {
   const [category, setCategory] = useState("All");
   const [year, setYear] = useState("All");
   const [years, setYears] = useState([]);
+
+  // Saved state — only fetched for students
+  const [savedEventIds, setSavedEventIds] = useState([]);
+
+  const fetchSavedIds = useCallback(async () => {
+    if (!isStudent) return;
+    try {
+      const res = await api.get("/users/saved-events");
+      setSavedEventIds((res.data?.data ?? []).map((e) => e._id));
+    } catch {
+      // non-critical — silently fail
+    }
+  }, [isStudent]);
 
   const fetchEvents = useCallback(async () => {
     setLoading(true);
@@ -54,7 +70,19 @@ export default function Events({ archive = false }) {
     }
   }, [category, year, search, archive]);
 
-  useEffect(() => { fetchEvents(); }, [fetchEvents]);
+  useEffect(() => {
+    fetchEvents();
+    fetchSavedIds();
+  }, [fetchEvents, fetchSavedIds]);
+
+  // Keep savedEventIds in sync when student toggles save on a card
+  const handleSaveToggle = (eventId, newSavedState) => {
+    setSavedEventIds((prev) =>
+      newSavedState
+        ? [...prev, eventId]
+        : prev.filter((id) => id !== eventId)
+    );
+  };
 
   const clearFilters = () => { setSearch(""); setCategory("All"); setYear("All"); };
   const hasFilters = search || category !== "All" || year !== "All";
@@ -183,7 +211,12 @@ export default function Events({ archive = false }) {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {events.map((event) => (
-              <EventCard key={event._id} event={event} />
+              <EventCard
+                key={event._id}
+                event={event}
+                savedEventIds={savedEventIds}
+                onSaveToggle={handleSaveToggle}
+              />
             ))}
           </div>
         )}

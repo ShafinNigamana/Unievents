@@ -11,6 +11,7 @@ import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import Events from "../pages/events/Events";
 import EventDetail from "../pages/events/EventDetail";
 import EventForm from "../pages/events/EventForm";
+import SavedEvents from "../pages/events/SavedEvents";
 
 import ProtectedRoute from "../components/ProtectedRoute";
 
@@ -43,6 +44,16 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["organizer", "admin"]}>
             <EventForm editMode />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ── Student: Saved Events ── */}
+      <Route
+        path="/saved-events"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <SavedEvents />
           </ProtectedRoute>
         }
       />

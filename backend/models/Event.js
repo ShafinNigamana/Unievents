@@ -193,10 +193,4 @@ eventSchema.pre("save", async function () {
   }
 });
 
-/* =========================
-   TEXT SEARCH INDEX
-========================= */
-
-eventSchema.index({ title: "text", description: "text" });
-
 module.exports = mongoose.model("Event", eventSchema);

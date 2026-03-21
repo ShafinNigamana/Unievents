@@ -54,7 +54,7 @@ export default function Login() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-gradient shadow-glow mb-4">
             <LogIn className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-3xl font-bold mb-1">
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
             Welcome back
           </h1>
           <p className="text-slate-400">
@@ -87,6 +87,9 @@ export default function Login() {
                   onChange={(e) => setEmail(e.target.value)}
                   className="input pl-10"
                   autoComplete="email"
+                  autoCorrect="off"
+                  autoCapitalize="off"
+                  spellCheck="false"
                 />
               </div>
             </div>
@@ -106,7 +109,7 @@ export default function Login() {
                 />
                 <button
                   type="button"
-                  onClick={() => setShowPw(!showPw)}
+                  onClick={() => setShowPw((p) => !p)}
                   className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
                 >
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}

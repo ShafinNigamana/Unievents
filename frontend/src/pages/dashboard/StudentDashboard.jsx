@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar, TrendingUp, Archive, ArrowRight,
-  Sparkles, Clock
+  Sparkles, Clock, Bookmark
 } from "lucide-react";
 import Layout from "../../components/layout/Layout";
 import EventCard from "../../components/ui/EventCard";
@@ -30,6 +30,7 @@ export default function StudentDashboard() {
 
   const [events, setEvents] = useState([]);
   const [archived, setArchived] = useState([]);
+  const [saved, setSaved] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -38,19 +39,22 @@ export default function StudentDashboard() {
       setLoading(true);
       setError("");
       try {
-        // Fetch published events + archived events simultaneously
-        const [pubRes, archRes] = await Promise.allSettled([
+        const [pubRes, archRes, savedRes] = await Promise.allSettled([
           api.get("/events"),
           api.get("/events/archive"),
+          api.get("/users/saved-events"),
         ]);
 
         const pubData = pubRes.status === "fulfilled"
           ? (pubRes.value.data?.data ?? []) : [];
         const archData = archRes.status === "fulfilled"
           ? (archRes.value.data?.data ?? []) : [];
+        const savedData = savedRes.status === "fulfilled"
+          ? (savedRes.value.data?.data ?? []) : [];
 
         setEvents(pubData);
         setArchived(archData);
+        setSaved(savedData);
       } catch {
         setError("Failed to load events.");
       } finally {
@@ -59,6 +63,15 @@ export default function StudentDashboard() {
     };
     fetchAll();
   }, []);
+
+  // When a card is unsaved from dashboard, remove it from saved list
+  const handleSaveToggle = (eventId, newSavedState) => {
+    if (!newSavedState) {
+      setSaved((prev) => prev.filter((e) => e._id !== eventId));
+    }
+  };
+
+  const savedEventIds = saved.map((e) => e._id);
 
   // Upcoming = events whose date is in the future
   const now = new Date();
@@ -81,19 +94,18 @@ export default function StudentDashboard() {
         <div className="relative overflow-hidden rounded-2xl border border-white/10 p-8"
           style={{ background: "linear-gradient(135deg, #1a0a3e 0%, #14142b 60%, #0d1a3a 100%)" }}>
 
-          {/* Subtle glow spots - uses opacity only, no blur filter */}
           <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-brand-500/10 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full bg-purple-600/10 pointer-events-none" />
 
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-5 h-5 text-brand-400" />
-              <span className="text-sm text-brand-300 font-medium">Student Portal</span>
+              <Sparkles className="w-5 h-5" style={{ color: "#a78bfa" }} />
+              <span className="text-sm font-medium" style={{ color: "#d8b4fe" }}>Student Portal</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-1">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: "#ffffff" }}>
               {greeting()}, {user?.name?.split(" ")[0] ?? "there"} 👋
             </h1>
-            <p className="text-slate-400">
+            <p className="text-sm sm:text-base" style={{ color: "#94a3b8" }}>
               Stay updated with campus events and activities.
             </p>
           </div>
@@ -101,7 +113,7 @@ export default function StudentDashboard() {
 
         {/* Stats */}
         {!loading && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <StatCard
               icon={TrendingUp} label="Published Events"
               value={events.length}
@@ -116,6 +128,11 @@ export default function StudentDashboard() {
               icon={Archive} label="Archived"
               value={archived.length}
               color="bg-blue-600/80" bg="border-blue-500/20"
+            />
+            <StatCard
+              icon={Bookmark} label="Saved"
+              value={saved.length}
+              color="bg-brand-600/80" bg="border-brand-500/20"
             />
           </div>
         )}
@@ -155,11 +172,45 @@ export default function StudentDashboard() {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {upcoming.slice(0, 6).map((event) => (
-                <EventCard key={event._id} event={event} />
+                <EventCard
+                  key={event._id}
+                  event={event}
+                  savedEventIds={savedEventIds}
+                  onSaveToggle={handleSaveToggle}
+                />
               ))}
             </div>
           )}
         </section>
+
+        {/* Saved events section */}
+        {!loading && saved.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <Bookmark className="w-5 h-5 text-brand-400" />
+                <h2>Saved Events</h2>
+              </div>
+              <button
+                onClick={() => navigate("/saved-events")}
+                className="flex items-center gap-1.5 text-sm text-brand-400 hover:text-brand-300 transition-colors"
+              >
+                View all <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              {saved.slice(0, 3).map((event) => (
+                <EventCard
+                  key={event._id}
+                  event={event}
+                  savedEventIds={savedEventIds}
+                  onSaveToggle={handleSaveToggle}
+                  allowUnsave={true}
+                />
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Archived section (compact) */}
         {!loading && archived.length > 0 && (
@@ -178,11 +229,17 @@ export default function StudentDashboard() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
               {archived.slice(0, 3).map((event) => (
-                <EventCard key={event._id} event={event} />
+                <EventCard
+                  key={event._id}
+                  event={event}
+                  savedEventIds={savedEventIds}
+                  onSaveToggle={handleSaveToggle}
+                />
               ))}
             </div>
           </section>
         )}
+
       </div>
     </Layout>
   );

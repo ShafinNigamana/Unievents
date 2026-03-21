@@ -1,7 +1,7 @@
 import { NavLink, useNavigate, Link } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Plus, LogOut,
-  Archive, ChevronDown, Menu, X, Sun, Moon
+  Archive, ChevronDown, Menu, X, Sun, Moon, Bookmark
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
@@ -31,22 +31,23 @@ function NavLinks({ role, onClose }) {
   if (role === "student") return (
     <>
       <NavItem to="/dashboard/student" icon={LayoutDashboard} label="Dashboard" {...p} />
-      <NavItem to="/events" icon={Calendar} label="Events"    {...p} />
-      <NavItem to="/events/archive" icon={Archive} label="Archive"   {...p} />
+      <NavItem to="/events" icon={Calendar} label="Events" {...p} />
+      <NavItem to="/events/archive" icon={Archive} label="Archive" {...p} />
+      <NavItem to="/saved-events" icon={Bookmark} label="Saved" {...p} />
     </>
   );
   if (role === "organizer") return (
     <>
-      <NavItem to="/dashboard/organizer" icon={LayoutDashboard} label="Dashboard"    {...p} />
+      <NavItem to="/dashboard/organizer" icon={LayoutDashboard} label="Dashboard" {...p} />
       <NavItem to="/events/new" icon={Plus} label="Create Event" {...p} />
-      <NavItem to="/events" icon={Calendar} label="Browse"       {...p} />
+      <NavItem to="/events" icon={Calendar} label="Browse" {...p} />
     </>
   );
   if (role === "admin") return (
     <>
       <NavItem to="/dashboard/admin" icon={LayoutDashboard} label="Dashboard" {...p} />
       <NavItem to="/events" icon={Calendar} label="All Events" {...p} />
-      <NavItem to="/events/archive" icon={Archive} label="Archive"   {...p} />
+      <NavItem to="/events/archive" icon={Archive} label="Archive" {...p} />
     </>
   );
   return null;

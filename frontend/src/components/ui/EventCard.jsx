@@ -1,6 +1,9 @@
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Clock, Tag, ArrowRight, Star } from "lucide-react";
+import { Calendar, MapPin, Clock, Tag, ArrowRight, Star, Bookmark } from "lucide-react";
 import Badge from "./Badge";
+import { useAuth } from "../../context/AuthContext";
+import api from "../../services/api";
 
 function formatDate(dateStr) {
   if (!dateStr) return "—";
@@ -23,8 +26,22 @@ function formatDateRange(start, end) {
   return `${s} – ${e}`;
 }
 
-export default function EventCard({ event, onClick }) {
+export default function EventCard({ event, onClick, savedEventIds = [], onSaveToggle, allowUnsave = false }) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const isStudent = user?.role === "student";
+  const isPublished = event.status === "published";
+  const isArchived = event.status === "archived";
+  const canSave = isStudent && (isPublished || (isArchived && allowUnsave));
+
+  // Sync isSaved whenever savedEventIds prop updates (async fetch case)
+  const [isSaved, setIsSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setIsSaved(savedEventIds.includes(event._id));
+  }, [savedEventIds, event._id]);
 
   const handleClick = () => {
     if (onClick) {
@@ -32,6 +49,24 @@ export default function EventCard({ event, onClick }) {
       return;
     }
     navigate(`/events/${event._id}`);
+  };
+
+  const handleSave = async (e) => {
+    e.stopPropagation(); // prevent card navigation
+    if (saving) return;
+
+    setSaving(true);
+    const prev = isSaved;
+    setIsSaved(!prev); // optimistic toggle
+
+    try {
+      await api.post(`/users/saved-events/${event._id}`);
+      if (onSaveToggle) onSaveToggle(event._id, !prev);
+    } catch {
+      setIsSaved(prev); // revert on error
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -55,6 +90,28 @@ export default function EventCard({ event, onClick }) {
           </div>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0c0e1a] via-transparent to-transparent" />
+
+        {/* Bookmark button — students only, published events only */}
+        {canSave && (
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            title={isSaved ? "Remove from saved" : "Save event"}
+            className={`absolute top-2.5 right-2.5 z-10 p-2 rounded-xl border backdrop-blur-sm
+              transition-all duration-200
+              ${isSaved
+                ? "bg-brand-500/90 border-brand-400/50 text-white shadow-glow-sm"
+                : "bg-black/40 border-white/20 text-slate-300 hover:bg-brand-500/80 hover:border-brand-400/50 hover:text-white"
+              }
+              ${saving ? "opacity-60 cursor-not-allowed" : ""}
+            `}
+          >
+            <Bookmark
+              className="w-3.5 h-3.5"
+              fill={isSaved ? "currentColor" : "transparent"}
+            />
+          </button>
+        )}
       </div>
 
       {/* Content */}

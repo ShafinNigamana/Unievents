@@ -33,8 +33,16 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: null,
       unique: true,
-      sparse: true,   // null values are excluded from the unique constraint
+      sparse: true, // null values are excluded from the unique constraint
     },
+
+    // Phase 2 — Saved Events (bookmarks), students only
+    savedEvents: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Event",
+      },
+    ],
 
     isActive: {
       type: Boolean,

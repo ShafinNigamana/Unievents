@@ -1,5 +1,5 @@
 const dns = require("dns");
-dns.setServers(["1.1.1.1"]); // Temporary SRV DNS fix
+dns.setServers(["8.8.8.8", "8.8.4.4"]); // Temporary SRV DNS fix using Google DNS
 
 const express = require("express");
 const cors = require("cors");
@@ -12,6 +12,10 @@ const connectDB = require("./config/db");
 // Routes
 const eventRoutes = require("./routes/eventRoutes");
 const authRoutes = require("./routes/authRoutes");
+const uploadRoutes = require("./routes/uploadRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
+const userRoutes = require("./routes/userRoutes");
+
 const errorHandler = require("./middleware/errorHandler");
 
 const app = express();
@@ -33,6 +37,7 @@ app.use(limiter);
 // CORS
 const ALLOWED_ORIGINS = [
   "http://localhost:5173",
+  "http://localhost:5174",
   "http://localhost:3000",
   process.env.CLIENT_URL,
 ].filter(Boolean);
@@ -78,14 +83,11 @@ app.get("/api/v1/health", (req, res) => {
    API ROUTES
 ========================= */
 
-// IMPORTANT: Updated base path to match documentation
 app.use("/api/v1/events", eventRoutes);
 app.use("/api/v1/auth", authRoutes);
-
-const uploadRoutes = require("./routes/uploadRoutes");
-const reviewRoutes = require("./routes/reviewRoutes");
 app.use("/api/v1/uploads", uploadRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/users", userRoutes);
 
 /* =========================
    GLOBAL ERROR HANDLER

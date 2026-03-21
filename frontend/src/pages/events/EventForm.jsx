@@ -286,37 +286,36 @@ export default function EventForm({ editMode = false }) {
             </div>
           </Field>
 
-          {/* Date row — Start Date + End Date horizontal */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label={isMultiDay ? "Start Date" : "Event Date"} required>
+          {/* Start Date */}
+          <Field label={isMultiDay ? "Start Date" : "Event Date"} required>
+            <div className="relative">
+              <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+              <input
+                type="date"
+                value={form.eventDate}
+                onChange={set("eventDate")}
+                className="input pl-10"
+                style={{ colorScheme: "dark" }}
+              />
+            </div>
+          </Field>
+
+          {/* End Date (Conditional) */}
+          {isMultiDay && (
+            <Field label="End Date">
               <div className="relative">
                 <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
                 <input
                   type="date"
-                  value={form.eventDate}
-                  onChange={set("eventDate")}
+                  value={form.endDate}
+                  onChange={set("endDate")}
+                  min={form.eventDate}
                   className="input pl-10"
                   style={{ colorScheme: "dark" }}
                 />
               </div>
             </Field>
-
-            {isMultiDay && (
-              <Field label="End Date">
-                <div className="relative">
-                  <Calendar className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                  <input
-                    type="date"
-                    value={form.endDate}
-                    onChange={set("endDate")}
-                    min={form.eventDate}
-                    className="input pl-10"
-                    style={{ colorScheme: "dark" }}
-                  />
-                </div>
-              </Field>
-            )}
-          </div>
+          )}
 
           {/* Toggle buttons row */}
           <div className="flex items-center gap-3 flex-wrap">
@@ -357,33 +356,33 @@ export default function EventForm({ editMode = false }) {
 
           {/* Start + End time — only shown when toggled */}
           {showTime && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Start Time">
-              <div className="relative">
-                <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                <input
-                  type="time"
-                  value={form.startTime}
-                  onChange={set("startTime")}
-                  className="input pl-10"
-                  style={{ colorScheme: "dark" }}
-                />
-              </div>
-            </Field>
+            <>
+              <Field label="Start Time">
+                <div className="relative">
+                  <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <input
+                    type="time"
+                    value={form.startTime}
+                    onChange={set("startTime")}
+                    className="input pl-10"
+                    style={{ colorScheme: "dark" }}
+                  />
+                </div>
+              </Field>
 
-            <Field label="End Time">
-              <div className="relative">
-                <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                <input
-                  type="time"
-                  value={form.endTime}
-                  onChange={set("endTime")}
-                  className="input pl-10"
-                  style={{ colorScheme: "dark" }}
-                />
-              </div>
-            </Field>
-          </div>
+              <Field label="End Time">
+                <div className="relative">
+                  <Clock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                  <input
+                    type="time"
+                    value={form.endTime}
+                    onChange={set("endTime")}
+                    className="input pl-10"
+                    style={{ colorScheme: "dark" }}
+                  />
+                </div>
+              </Field>
+            </>
           )}
 
           {/* Venue */}

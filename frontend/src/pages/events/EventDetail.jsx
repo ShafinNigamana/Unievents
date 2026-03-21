@@ -2,8 +2,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   Calendar, MapPin, Clock, Tag, ArrowLeft,
-  User, Archive, CheckCircle2, FileText,
-  Star as StarIcon, MessageSquare, Send, Trash2, Edit2, Loader2
+  User, Archive, FileText,
+  Star as StarIcon, MessageSquare, Send, Trash2, Edit2, Loader2,
+  Bookmark
 } from "lucide-react";
 import Layout from "../../components/layout/Layout";
 import Badge from "../../components/ui/Badge";
@@ -49,6 +50,11 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Save state
+  const isStudent = user?.role === "student";
+  const [isSaved, setIsSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+
   // Reviews state
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
@@ -79,7 +85,6 @@ export default function EventDetail() {
       const allReviews = res.data?.data ?? [];
       setReviews(allReviews);
 
-      // Check if current user has already reviewed
       if (user) {
         const found = allReviews.find(r => r.userId?._id === user.id || r.userId === user.id);
         if (found) {
@@ -95,10 +100,38 @@ export default function EventDetail() {
     }
   }, [id, user]);
 
+  // Fetch initial saved state for student
+  const fetchSavedState = useCallback(async () => {
+    if (!isStudent) return;
+    try {
+      const res = await api.get("/users/saved-events");
+      const savedIds = (res.data?.data ?? []).map((e) => e._id);
+      setIsSaved(savedIds.includes(id));
+    } catch {
+      // silently fail — save state is non-critical
+    }
+  }, [id, isStudent]);
+
   useEffect(() => {
     fetchEvent();
     fetchReviews();
-  }, [fetchEvent, fetchReviews]);
+    fetchSavedState();
+  }, [fetchEvent, fetchReviews, fetchSavedState]);
+
+  const handleSave = async () => {
+    if (saving) return;
+    setSaving(true);
+    const prev = isSaved;
+    setIsSaved(!prev); // optimistic
+
+    try {
+      await api.post(`/users/saved-events/${id}`);
+    } catch {
+      setIsSaved(prev); // revert on error
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const handleSubmitReview = async (e) => {
     e.preventDefault();
@@ -117,7 +150,7 @@ export default function EventDetail() {
       }
       setIsEditing(false);
       fetchReviews();
-      fetchEvent(); // Refresh average rating
+      fetchEvent();
     } catch (err) {
       setFormError(err.response?.data?.error || "Failed to submit review.");
     } finally {
@@ -166,21 +199,50 @@ export default function EventDetail() {
         ? event.startTime
         : null;
 
-  const isStudent = user?.role === "student";
+  const canSave = isStudent && event.status === "published";
   const canReview = isStudent && event.createdBy !== user.id && ["published", "archived"].includes(event.status);
 
   return (
     <Layout>
       <div className="max-w-3xl mx-auto animate-slide-up space-y-6 pb-20">
 
-        {/* Back */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to events
-        </button>
+        {/* Back + Save row */}
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to events
+          </button>
+
+          {/* Save button — students + published only */}
+          {canSave && (
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              title={isSaved ? "Remove from saved" : "Save this event"}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium
+                transition-all duration-200
+                ${isSaved
+                  ? "bg-brand-500/20 border-brand-500/40 text-brand-300 hover:bg-brand-500/30"
+                  : "bg-white/5 border-white/10 text-slate-400 hover:bg-brand-500/15 hover:border-brand-500/30 hover:text-brand-300"
+                }
+                ${saving ? "opacity-60 cursor-not-allowed" : ""}
+              `}
+            >
+              {saving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Bookmark
+                  className="w-4 h-4"
+                  fill={isSaved ? "currentColor" : "transparent"}
+                />
+              )}
+              {isSaved ? "Saved" : "Save Event"}
+            </button>
+          )}
+        </div>
 
         {/* Hero card */}
         <div className="glass-card overflow-hidden">
@@ -303,7 +365,7 @@ export default function EventDetail() {
                   <label className="block text-xs text-slate-500 uppercase tracking-wider mb-2">Comment (Optional)</label>
                   <textarea
                     className="input min-h-[100px] resize-none"
-                    placeholder="Shared your experience with other students..."
+                    placeholder="Share your experience with other students..."
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     maxLength={500}
@@ -384,25 +446,25 @@ export default function EventDetail() {
               reviews
                 .filter(r => r._id !== userReview?._id)
                 .map((r) => (
-                <div key={r._id} className="glass-card p-5 border-white/5">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-white">
-                      {r.userId?.name || "Anonymous Student"}
-                    </span>
-                    <span className="text-[10px] text-slate-500 uppercase">
-                      {new Date(r.createdAt).toLocaleDateString()}
-                    </span>
+                  <div key={r._id} className="glass-card p-5 border-white/5">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-white">
+                        {r.userId?.name || "Anonymous Student"}
+                      </span>
+                      <span className="text-[10px] text-slate-500 uppercase">
+                        {new Date(r.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="mb-2">
+                      <StarRating rating={r.rating} size={14} />
+                    </div>
+                    {r.comment && (
+                      <p className="text-slate-400 text-sm leading-relaxed">
+                        {r.comment}
+                      </p>
+                    )}
                   </div>
-                  <div className="mb-2">
-                    <StarRating rating={r.rating} size={14} />
-                  </div>
-                  {r.comment && (
-                    <p className="text-slate-400 text-sm leading-relaxed">
-                      {r.comment}
-                    </p>
-                  )}
-                </div>
-              ))
+                ))
             )}
           </div>
         </div>
@@ -410,4 +472,3 @@ export default function EventDetail() {
     </Layout>
   );
 }
-

@@ -242,6 +242,13 @@
   border-bottom-color: rgba(109, 58, 255, 0.14) !important;
 }
 
+/* Auth Page overrides */
+:root:not(.dark) .auth-page {
+  background: radial-gradient(ellipse at 30% 10%, rgba(109, 58, 255, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 90%, rgba(168, 85, 247, 0.08) 0%, transparent 50%),
+    #f4f2ff !important;
+}
+
 /* Inline bg-white/5 panels (table headers, dropdown user info strip) */
 :root:not(.dark) .bg-white\/5 {
   background-color: rgba(109, 58, 255, 0.06) !important;

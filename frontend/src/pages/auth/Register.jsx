@@ -75,7 +75,7 @@ export default function Register() {
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-brand-gradient shadow-glow mb-4">
             <UserPlus className="w-7 h-7 text-white" />
           </div>
-          <h1 className="text-3xl font-bold mb-1">Create account</h1>
+          <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">Create account</h1>
           <p className="text-slate-400">
             Join{" "}
             <span className="gradient-text font-semibold">UniEvents</span>

@@ -37,6 +37,14 @@ const paginate = (query, req) => {
 
 const createEvent = async (req, res, next) => {
   try {
+    // Guard — req.user must be set by protect middleware
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({
+        success: false,
+        error: "Not authorized",
+      });
+    }
+
     const {
       title,
       description,
@@ -57,12 +65,12 @@ const createEvent = async (req, res, next) => {
       category,
       eventDate,
       endDate: endDate || null,
-      startTime,
-      endTime,
-      venue,
-      tags,
-      posterUrl,
-      posterPublicId,
+      startTime: startTime || null,
+      endTime: endTime || null,
+      venue: venue || null,
+      tags: tags || [],
+      posterUrl: posterUrl || null,
+      posterPublicId: posterPublicId || null,
       createdBy: req.user.id,
       status: "draft",
       approvalStatus: "pending",
@@ -275,13 +283,17 @@ const getPublishedEvents = async (req, res, next) => {
     if (category) filter.category = category;
     if (tag) filter.tags = tag;
 
-    let query = Event.find(filter);
-
     if (search) {
-      query = query.find({ $text: { $search: search } });
+      const regex = new RegExp(search, "i");
+      filter.$or = [
+        { title: regex },
+        { description: regex },
+        { category: regex },
+        { tags: regex },
+      ];
     }
 
-    query = query.sort({ eventDate: -1 });
+    let query = Event.find(filter).sort({ eventDate: -1 });
 
     const { paginatedQuery, page, limit } = paginate(query, req);
     const events = await paginatedQuery;

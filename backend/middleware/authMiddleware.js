@@ -30,6 +30,8 @@ const protect = async (req, res, next) => {
       });
     }
 
+    // Explicitly convert ObjectId to string to prevent
+    // "Cast to ObjectId failed for value undefined" errors in controllers
     req.user = {
       id: user._id.toString(),
       role: user.role,
@@ -45,7 +47,7 @@ const protect = async (req, res, next) => {
 };
 
 // Same as protect but does NOT block unauthenticated requests.
-// If a valid token is present, sets req.user. Otherwise, continues silently.
+// If a valid token is present, sets req.user. Otherwise continues silently.
 const optionalAuth = async (req, res, next) => {
   try {
     let token;
