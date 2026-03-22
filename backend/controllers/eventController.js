@@ -684,15 +684,7 @@ const registerEvent = async (req, res, next) => {
       });
     }
 
-    // 5. Capacity check
-    if (event.capacity !== null && event.registeredCount >= event.capacity) {
-      return res.status(400).json({
-        success: false,
-        error: "Event is at full capacity",
-      });
-    }
-
-    // 6. Eligibility check — only runs if event has requirements
+    // 5. Eligibility check — only runs if event has requirements
     const reqs = event.requirements;
     const hasRequirements =
       reqs &&
@@ -731,6 +723,14 @@ const registerEvent = async (req, res, next) => {
           error: "You are not eligible for this event",
         });
       }
+    }
+
+    // 6. Capacity check
+    if (event.capacity !== null && event.registeredCount >= event.capacity) {
+      return res.status(400).json({
+        success: false,
+        error: "Event is at full capacity",
+      });
     }
 
     // 7. Register — create or re-activate
