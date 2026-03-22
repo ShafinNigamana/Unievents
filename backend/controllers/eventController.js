@@ -1,5 +1,6 @@
 const Event = require("../models/Event");
 const Registration = require("../models/Registration");
+const User = require("../models/User");
 
 /* =========================
    AUTO ARCHIVE HELPER
@@ -30,6 +31,112 @@ const paginate = (query, req) => {
   }
 
   return { paginatedQuery: query, page: null, limit: null };
+};
+
+/* =========================
+   ELIGIBILITY HELPER
+   Checks student profile against event requirements.
+   Returns { eligible: true } or { eligible: false, reason: "..." }
+========================= */
+
+const checkEligibility = (student, requirements) => {
+  // No requirements defined — open to all
+  if (!requirements) return { eligible: true };
+
+  const {
+    departments = [],
+    semesters = [],
+    years = [],
+    minCgpa = null,
+    skills = [],
+  } = requirements;
+
+  const hasRequirements =
+    departments.length > 0 ||
+    semesters.length > 0 ||
+    years.length > 0 ||
+    minCgpa !== null ||
+    skills.length > 0;
+
+  // No restrictions at all — open to all
+  if (!hasRequirements) return { eligible: true };
+
+  // ── Department check ─────────────────────────────
+  if (departments.length > 0) {
+    if (!student.department) {
+      return {
+        eligible: false,
+        reason: "incomplete",
+        field: "department",
+      };
+    }
+    if (!departments.includes(student.department)) {
+      return { eligible: false, reason: "ineligible" };
+    }
+  }
+
+  // ── Semester check ───────────────────────────────
+  if (semesters.length > 0) {
+    if (student.semester === null || student.semester === undefined) {
+      return {
+        eligible: false,
+        reason: "incomplete",
+        field: "semester",
+      };
+    }
+    if (!semesters.includes(student.semester)) {
+      return { eligible: false, reason: "ineligible" };
+    }
+  }
+
+  // ── Year check ───────────────────────────────────
+  if (years.length > 0) {
+    if (student.year === null || student.year === undefined) {
+      return {
+        eligible: false,
+        reason: "incomplete",
+        field: "year",
+      };
+    }
+    if (!years.includes(student.year)) {
+      return { eligible: false, reason: "ineligible" };
+    }
+  }
+
+  // ── CGPA check ───────────────────────────────────
+  if (minCgpa !== null) {
+    if (student.cgpa === null || student.cgpa === undefined) {
+      return {
+        eligible: false,
+        reason: "incomplete",
+        field: "cgpa",
+      };
+    }
+    if (student.cgpa < minCgpa) {
+      return { eligible: false, reason: "ineligible" };
+    }
+  }
+
+  // ── Skills check — at least one match required ───
+  if (skills.length > 0) {
+    if (!student.skills || student.skills.length === 0) {
+      return {
+        eligible: false,
+        reason: "incomplete",
+        field: "skills",
+      };
+    }
+    const studentSkillsLower = student.skills.map((s) => s.toLowerCase());
+    const requiredSkillsLower = skills.map((s) => s.toLowerCase());
+    const hasMatch = requiredSkillsLower.some((s) =>
+      studentSkillsLower.includes(s)
+    );
+    if (!hasMatch) {
+      return { eligible: false, reason: "ineligible" };
+    }
+  }
+
+  return { eligible: true };
 };
 
 /* =========================
@@ -282,7 +389,6 @@ const toggleInterest = async (req, res, next) => {
       });
     }
 
-    // Deleted events behave as if they don't exist — check before lifecycle
     if (event.isDeleted) {
       return res.status(404).json({
         success: false,
@@ -290,7 +396,6 @@ const toggleInterest = async (req, res, next) => {
       });
     }
 
-    // Only published events can receive interest
     if (event.status !== "published") {
       return res.status(400).json({
         success: false,
@@ -303,7 +408,6 @@ const toggleInterest = async (req, res, next) => {
     );
 
     if (alreadyInterested) {
-      // Remove interest
       event.interestedUsers = event.interestedUsers.filter(
         (id) => id.toString() !== userId
       );
@@ -318,7 +422,6 @@ const toggleInterest = async (req, res, next) => {
         interestedCount: event.interestedCount,
       });
     } else {
-      // Add interest
       event.interestedUsers.push(userId);
       event.interestedCount = event.interestedUsers.length;
 
@@ -537,7 +640,6 @@ const getSoftDeletedEvents = async (req, res, next) => {
   }
 };
 
-
 /* =========================
    REGISTER FOR EVENT
    POST /api/v1/events/:id/register
@@ -590,14 +692,54 @@ const registerEvent = async (req, res, next) => {
       });
     }
 
+    // 6. Eligibility check — only runs if event has requirements
+    const reqs = event.requirements;
+    const hasRequirements =
+      reqs &&
+      (
+        (reqs.departments && reqs.departments.length > 0) ||
+        (reqs.semesters && reqs.semesters.length > 0) ||
+        (reqs.years && reqs.years.length > 0) ||
+        reqs.minCgpa !== null ||
+        (reqs.skills && reqs.skills.length > 0)
+      );
+
+    if (hasRequirements) {
+      // Fetch student profile — only fields needed for eligibility
+      const student = await User.findById(userId).select(
+        "department semester year cgpa skills"
+      );
+
+      if (!student) {
+        return res.status(404).json({
+          success: false,
+          error: "User not found",
+        });
+      }
+
+      const result = checkEligibility(student, reqs);
+
+      if (!result.eligible) {
+        if (result.reason === "incomplete") {
+          return res.status(400).json({
+            success: false,
+            error: `Profile incomplete. Please update your ${result.field} in your profile before registering.`,
+          });
+        }
+        return res.status(403).json({
+          success: false,
+          error: "You are not eligible for this event",
+        });
+      }
+    }
+
+    // 7. Register — create or re-activate
     if (existing && existing.status === "cancelled") {
-      // Re-register — update existing record
       existing.status = "registered";
       existing.registeredAt = new Date();
       existing.cancelledAt = null;
       await existing.save();
     } else {
-      // First time — create new registration
       await Registration.create({
         eventId: event._id,
         userId,
@@ -606,7 +748,7 @@ const registerEvent = async (req, res, next) => {
       });
     }
 
-    // Increment registeredCount
+    // 8. Increment registeredCount
     event.registeredCount = Math.max(0, event.registeredCount) + 1;
     await event.save();
 
@@ -761,4 +903,3 @@ module.exports = {
   getAllEvents,
   getSoftDeletedEvents,
 };
-// Exported handlers verified: registerEvent, cancelRegistration, getEventAttendees

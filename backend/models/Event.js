@@ -88,6 +88,37 @@ const eventSchema = new mongoose.Schema(
     },
 
     /* =========================
+       REGISTRATION REQUIREMENTS — Phase 2
+       All fields optional.
+       Empty / null = open to all students.
+    ========================= */
+
+    requirements: {
+      departments: {
+        type: [String],
+        default: [],
+      },
+      semesters: {
+        type: [Number],
+        default: [],
+      },
+      years: {
+        type: [Number],
+        default: [],
+      },
+      minCgpa: {
+        type: Number,
+        default: null,
+        min: [0, "Minimum CGPA cannot be less than 0"],
+        max: [10, "Minimum CGPA cannot exceed 10"],
+      },
+      skills: {
+        type: [String],
+        default: [],
+      },
+    },
+
+    /* =========================
        OWNERSHIP
     ========================= */
 
