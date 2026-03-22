@@ -6,16 +6,18 @@ const {
     getSavedEvents,
     getMyRegistrations,
     getMyProfile,
+    updateProfile,
 } = require("../controllers/userController");
 
 const { protect } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
 
 /* =========================
-   PROFILE ROUTE
-   Must be defined BEFORE /:param style routes
+   PROFILE ROUTES
+   Defined FIRST — before any /:param routes
 ========================= */
 
+// GET full aggregated profile
 router.get(
     "/me/profile",
     protect,
@@ -23,9 +25,16 @@ router.get(
     getMyProfile
 );
 
+// PUT update profile info
+router.put(
+    "/me",
+    protect,
+    authorizeRoles("student"),
+    updateProfile
+);
+
 /* =========================
    SAVED EVENTS ROUTES
-   All routes: authenticated + student only
 ========================= */
 
 router.get(
@@ -44,7 +53,6 @@ router.post(
 
 /* =========================
    REGISTRATION ROUTES
-   All routes: authenticated + student only
 ========================= */
 
 router.get(

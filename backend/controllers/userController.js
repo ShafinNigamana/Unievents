@@ -13,7 +13,6 @@ const toggleSavedEvent = async (req, res, next) => {
         const { eventId } = req.params;
         const userId = req.user.id;
 
-        // Check event exists
         const event = await Event.findById(eventId);
 
         if (!event) {
@@ -23,7 +22,6 @@ const toggleSavedEvent = async (req, res, next) => {
             });
         }
 
-        // Event must not be soft-deleted
         if (event.isDeleted) {
             return res.status(400).json({
                 success: false,
@@ -31,7 +29,6 @@ const toggleSavedEvent = async (req, res, next) => {
             });
         }
 
-        // Event must be published
         if (event.status !== "published") {
             return res.status(400).json({
                 success: false,
@@ -46,7 +43,6 @@ const toggleSavedEvent = async (req, res, next) => {
         );
 
         if (alreadySaved) {
-            // Unsave — remove from array
             user.savedEvents = user.savedEvents.filter(
                 (id) => id.toString() !== eventId
             );
@@ -58,7 +54,6 @@ const toggleSavedEvent = async (req, res, next) => {
                 saved: false,
             });
         } else {
-            // Save — add to array
             user.savedEvents.push(eventId);
             await user.save();
 
@@ -89,10 +84,8 @@ const getSavedEvents = async (req, res, next) => {
                 "title description category eventDate endDate startTime endTime venue tags posterUrl status approvalStatus averageRating reviewCount interestedUsers interestedCount year createdBy",
         });
 
-        // After populate, soft-deleted events resolve to null — filter them out
         const validEvents = (user.savedEvents || []).filter(Boolean);
 
-        // Cleanup: remove stale IDs (soft-deleted events) from user's savedEvents array
         const validIds = validEvents.map((e) => e._id.toString());
         const rawUser = await User.findById(userId).select("savedEvents");
         const hasStale = rawUser.savedEvents.some(
@@ -133,7 +126,6 @@ const getMyRegistrations = async (req, res, next) => {
             })
             .sort({ registeredAt: -1 });
 
-        // Filter out registrations where event was soft-deleted (populate returns null)
         const validRegistrations = registrations.filter((r) => r.eventId !== null);
 
         return res.status(200).json({
@@ -157,7 +149,7 @@ const getMyProfile = async (req, res, next) => {
 
         // ── 1. User basic info ──────────────────────────────────────
         const user = await User.findById(userId).select(
-            "name email enrollmentId role createdAt"
+            "name email enrollmentId role department semester year cgpa phone skills createdAt"
         );
 
         if (!user) {
@@ -168,7 +160,6 @@ const getMyProfile = async (req, res, next) => {
         }
 
         // ── 2. Saved Events ─────────────────────────────────────────
-        // From User.savedEvents — exclude soft-deleted, include archived
         const userWithSaved = await User.findById(userId).populate({
             path: "savedEvents",
             match: { isDeleted: false },
@@ -178,7 +169,6 @@ const getMyProfile = async (req, res, next) => {
         const savedEvents = (userWithSaved.savedEvents || []).filter(Boolean);
 
         // ── 3. Registered Events ────────────────────────────────────
-        // Active registrations only — exclude soft-deleted, include archived
         const registrations = await Registration.find({
             userId,
             status: "registered",
@@ -200,8 +190,6 @@ const getMyProfile = async (req, res, next) => {
             }));
 
         // ── 4. Interested Events ────────────────────────────────────
-        // Events where this user is in interestedUsers array
-        // Only published + archived, exclude soft-deleted
         const interestedEvents = await Event.find({
             interestedUsers: userId,
             isDeleted: false,
@@ -221,7 +209,6 @@ const getMyProfile = async (req, res, next) => {
             .sort({ createdAt: -1 });
         const myReviews = reviews.filter((r) => r.eventId !== null);
 
-        // ── Response ────────────────────────────────────────────────
         return res.status(200).json({
             success: true,
             data: {
@@ -237,9 +224,184 @@ const getMyProfile = async (req, res, next) => {
     }
 };
 
+/* =========================
+   UPDATE MY PROFILE
+   PUT /api/v1/users/me
+========================= */
+
+const updateProfile = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+
+        // ── Whitelist — only these fields can be updated ────────────
+        const {
+            name,
+            email,
+            enrollmentId,
+            department,
+            semester,
+            year,
+            cgpa,
+            phone,
+            skills,
+        } = req.body;
+
+        // ── Validation ──────────────────────────────────────────────
+
+        // Name
+        if (name !== undefined) {
+            if (typeof name !== "string" || name.trim().length < 2) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Name must be at least 2 characters",
+                });
+            }
+        }
+
+        // Email format
+        if (email !== undefined) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Invalid email format",
+                });
+            }
+
+            // Email uniqueness — exclude current user
+            const existing = await User.findOne({
+                email: email.toLowerCase().trim(),
+                _id: { $ne: userId },
+            });
+            if (existing) {
+                return res.status(409).json({
+                    success: false,
+                    error: "Email is already in use by another account",
+                });
+            }
+        }
+
+        // EnrollmentId uniqueness — exclude current user
+        if (enrollmentId !== undefined && enrollmentId !== null) {
+            const existingEnrollment = await User.findOne({
+                enrollmentId,
+                _id: { $ne: userId },
+            });
+            if (existingEnrollment) {
+                return res.status(409).json({
+                    success: false,
+                    error: "Enrollment ID is already in use",
+                });
+            }
+        }
+
+        // Semester
+        if (semester !== undefined && semester !== null) {
+            if (typeof semester !== "number" || !Number.isInteger(semester) || semester < 1 || semester > 12) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Semester must be a whole number between 1 and 12",
+                });
+            }
+        }
+
+        // Year
+        if (year !== undefined && year !== null) {
+            if (typeof year !== "number" || !Number.isInteger(year) || year < 1 || year > 6) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Year must be a whole number between 1 and 6",
+                });
+            }
+        }
+
+        // CGPA
+        if (cgpa !== undefined && cgpa !== null) {
+            if (typeof cgpa !== "number" || cgpa < 0 || cgpa > 10) {
+                return res.status(400).json({
+                    success: false,
+                    error: "CGPA must be a number between 0 and 10",
+                });
+            }
+        }
+
+        // Skills — must be array of strings
+        if (skills !== undefined) {
+            if (!Array.isArray(skills)) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Skills must be an array",
+                });
+            }
+            if (skills.some((s) => typeof s !== "string" || s.trim().length === 0)) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Each skill must be a non-empty string",
+                });
+            }
+        }
+
+        // Phone — basic format check if provided
+        if (phone !== undefined && phone !== null && phone !== "") {
+            const phoneRegex = /^[0-9+\-\s()]{7,15}$/;
+            if (!phoneRegex.test(phone)) {
+                return res.status(400).json({
+                    success: false,
+                    error: "Invalid phone number format",
+                });
+            }
+        }
+
+        // ── Build update object — only include provided fields ───────
+        const updates = {};
+        if (name !== undefined) updates.name = name.trim();
+        if (email !== undefined) updates.email = email.toLowerCase().trim();
+        if (enrollmentId !== undefined) updates.enrollmentId = enrollmentId;
+        if (department !== undefined) updates.department = department?.trim() || null;
+        if (semester !== undefined) updates.semester = semester;
+        if (year !== undefined) updates.year = year;
+        if (cgpa !== undefined) updates.cgpa = cgpa;
+        if (phone !== undefined) updates.phone = phone?.trim() || null;
+        if (skills !== undefined) updates.skills = skills.map((s) => s.trim());
+
+        // ── Apply update ─────────────────────────────────────────────
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { $set: updates },
+            { new: true, runValidators: true }
+        ).select(
+            "name email enrollmentId department semester year cgpa phone skills role createdAt"
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({
+                success: false,
+                error: "User not found",
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: "Profile updated successfully",
+            data: updatedUser,
+        });
+    } catch (error) {
+        // Handle Mongoose duplicate key errors
+        if (error.code === 11000) {
+            const field = Object.keys(error.keyPattern)[0];
+            return res.status(409).json({
+                success: false,
+                error: `${field === "email" ? "Email" : "Enrollment ID"} is already in use`,
+            });
+        }
+        next(error);
+    }
+};
+
 module.exports = {
     toggleSavedEvent,
     getSavedEvents,
     getMyRegistrations,
     getMyProfile,
+    updateProfile,
 };

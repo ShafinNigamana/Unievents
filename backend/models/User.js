@@ -2,6 +2,10 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    /* =========================
+       CORE AUTH FIELDS
+    ========================= */
+
     name: {
       type: String,
       required: true,
@@ -36,13 +40,59 @@ const userSchema = new mongoose.Schema(
       sparse: true, // null values are excluded from the unique constraint
     },
 
-    // Phase 2 — Saved Events (bookmarks), students only
+    /* =========================
+       ACADEMIC PROFILE FIELDS
+       Phase 2 — Update Profile
+    ========================= */
+
+    department: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+
+    semester: {
+      type: Number,
+      default: null,
+    },
+
+    year: {
+      type: Number,
+      default: null,
+    },
+
+    cgpa: {
+      type: Number,
+      default: null,
+      min: [0, "CGPA cannot be less than 0"],
+      max: [10, "CGPA cannot exceed 10"],
+    },
+
+    phone: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+
+    skills: {
+      type: [String],
+      default: [],
+    },
+
+    /* =========================
+       PHASE 2 — SAVED EVENTS
+    ========================= */
+
     savedEvents: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "Event",
       },
     ],
+
+    /* =========================
+       SYSTEM FIELDS
+    ========================= */
 
     isActive: {
       type: Boolean,
