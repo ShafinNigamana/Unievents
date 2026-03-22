@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 import {
   Plus, Edit2, Trash2, FileText, Clock, Calendar,
   CheckCircle2, Archive, TrendingUp, LayoutDashboard,
-  ChevronRight, AlertCircle, Loader2, Star
+  ChevronRight, AlertCircle, Loader2, Star,
+  Users, X, Mail, Hash, UserCheck
 } from "lucide-react";
 import Layout from "../../components/layout/Layout";
 import Badge from "../../components/ui/Badge";
@@ -34,6 +35,7 @@ function ActionBtn({ icon: Icon, label, onClick, variant = "ghost", disabled = f
     brand: "text-brand-400 hover:text-brand-300 hover:bg-brand-500/10",
     danger: "text-red-400 hover:text-red-300 hover:bg-red-500/10",
     success: "text-green-400 hover:text-green-300 hover:bg-green-500/10",
+    info: "text-blue-400 hover:text-blue-300 hover:bg-blue-500/10",
   };
   return (
     <button
@@ -49,6 +51,147 @@ function ActionBtn({ icon: Icon, label, onClick, variant = "ghost", disabled = f
   );
 }
 
+/* ── Attendees Modal ────────────────────────── */
+function AttendeesModal({ event, onClose }) {
+  const [attendees, setAttendees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!event) return;
+    const fetchAttendees = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await api.get(`/events/${event._id}/attendees`);
+        setAttendees(res.data?.data ?? []);
+      } catch (err) {
+        setError(err.response?.data?.error || "Failed to load attendees.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAttendees();
+  }, [event]);
+
+  const capacity = event?.capacity ?? null;
+  const registered = event?.registeredCount ?? 0;
+
+  return (
+    <Modal
+      isOpen={!!event}
+      onClose={onClose}
+      title={`Attendees — ${event?.title ?? ""}`}
+    >
+      {/* Capacity bar */}
+      <div className="mb-5">
+        <div className="flex items-center justify-between text-xs mb-2">
+          <span className="text-slate-400">
+            {registered} registered
+            {capacity ? ` of ${capacity} capacity` : " (no capacity limit)"}
+          </span>
+          {capacity && (
+            <span className={`font-semibold ${registered >= capacity ? "text-red-400" : "text-green-400"}`}>
+              {capacity - registered >= 0 ? capacity - registered : 0} spots left
+            </span>
+          )}
+        </div>
+        {capacity && (
+          <div className="w-full h-1.5 bg-white/10 rounded-full overflow-hidden">
+            <div
+              className={`h-full rounded-full transition-all ${registered >= capacity ? "bg-red-500" : "bg-green-500"
+                }`}
+              style={{ width: `${Math.min(100, (registered / capacity) * 100)}%` }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Content */}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="w-6 h-6 text-brand-400 animate-spin" />
+        </div>
+      ) : error ? (
+        <p className="text-red-400 text-sm text-center py-8">{error}</p>
+      ) : attendees.length === 0 ? (
+        <div className="text-center py-12 space-y-2">
+          <Users className="w-10 h-10 text-slate-600 mx-auto" />
+          <p className="text-slate-400 text-sm">No registrations yet.</p>
+        </div>
+      ) : (
+        <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+          {attendees.map((reg, i) => {
+            const u = reg.userId;
+            return (
+              <div
+                key={reg._id}
+                className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/8"
+              >
+                {/* Avatar */}
+                <div className="w-8 h-8 rounded-full bg-brand-gradient flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+                  {u?.name
+                    ? u.name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
+                    : String(i + 1).padStart(2, "0")}
+                </div>
+
+                {/* Info */}
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-white truncate">
+                    {u?.name ?? "—"}
+                  </p>
+                  <div className="flex items-center gap-3 mt-0.5 flex-wrap">
+                    {u?.email && (
+                      <span className="flex items-center gap-1 text-[11px] text-slate-400">
+                        <Mail className="w-3 h-3" />
+                        {u.email}
+                      </span>
+                    )}
+                    {u?.enrollmentId && (
+                      <span className="flex items-center gap-1 text-[11px] text-slate-500">
+                        <Hash className="w-3 h-3" />
+                        {u.enrollmentId}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Registered date */}
+                <div className="text-right flex-shrink-0">
+                  <p className="text-[11px] text-slate-500">
+                    {reg.registeredAt
+                      ? new Date(reg.registeredAt).toLocaleDateString("en-IN", {
+                        day: "numeric", month: "short",
+                      })
+                      : "—"}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Export hint */}
+      {!loading && attendees.length > 0 && (
+        <p className="text-[11px] text-slate-600 mt-4 text-center">
+          {attendees.length} attendee{attendees.length !== 1 ? "s" : ""} registered
+        </p>
+      )}
+
+      {/* Close */}
+      <div className="flex justify-end mt-5">
+        <button onClick={onClose} className="button-ghost py-2 px-4 text-sm">
+          Close
+        </button>
+      </div>
+    </Modal>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   ORGANIZER DASHBOARD
+═══════════════════════════════════════════════ */
 export default function OrganizerDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -60,6 +203,9 @@ export default function OrganizerDashboard() {
   // Delete modal
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [deleting, setDeleting] = useState(false);
+
+  // Attendees modal
+  const [attendeesEvent, setAttendeesEvent] = useState(null);
 
   // Status change loading
   const [statusLoading, setStatusLoading] = useState(null);
@@ -105,7 +251,7 @@ export default function OrganizerDashboard() {
     }
   };
 
-  /* ── Publish (status → published) ─── */
+  /* ── Publish ─── */
   const handlePublish = async (event) => {
     setStatusLoading(event._id);
     try {
@@ -120,7 +266,9 @@ export default function OrganizerDashboard() {
 
   /* ── Format date ─── */
   const fmtDate = (d) =>
-    d ? new Date(d).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—";
+    d ? new Date(d).toLocaleDateString("en-IN", {
+      day: "numeric", month: "short", year: "numeric",
+    }) : "—";
 
   return (
     <Layout>
@@ -133,7 +281,7 @@ export default function OrganizerDashboard() {
               <LayoutDashboard className="w-5 h-5 text-brand-400" />
               <h1>Organizer Dashboard</h1>
             </div>
-            <p>Manage your events — create, edit, publish, and delete.</p>
+            <p>Manage your events — create, edit, publish, and view attendees.</p>
           </div>
           <button
             onClick={() => navigate("/events/new")}
@@ -186,6 +334,7 @@ export default function OrganizerDashboard() {
                     <th className="text-left px-4 py-3 font-medium">Date</th>
                     <th className="text-left px-4 py-3 font-medium">Status</th>
                     <th className="text-left px-4 py-3 font-medium">Rating</th>
+                    <th className="text-left px-4 py-3 font-medium">Registered</th>
                     <th className="text-left px-4 py-3 font-medium">Approval</th>
                     <th className="text-right px-6 py-3 font-medium">Actions</th>
                   </tr>
@@ -220,13 +369,14 @@ export default function OrganizerDashboard() {
                       </td>
 
                       {/* Date */}
-                      <td className="px-4 py-4 text-slate-400 whitespace-nowrap">
+                      <td className="px-4 py-4 text-slate-400 whitespace-nowrap text-xs">
                         {fmtDate(event.eventDate)}
                         {event.endDate && (
                           <span className="text-slate-500"> – {fmtDate(event.endDate)}</span>
                         )}
                       </td>
 
+                      {/* Status */}
                       <td className="px-4 py-4">
                         <Badge type="status" value={event.status} />
                       </td>
@@ -238,6 +388,23 @@ export default function OrganizerDashboard() {
                             <Star size={10} className="text-amber-400 fill-amber-400" />
                             <span className="font-bold text-amber-300">{event.averageRating}</span>
                             <span className="text-amber-300/60 font-medium">({event.reviewCount})</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-600">—</span>
+                        )}
+                      </td>
+
+                      {/* Registered count */}
+                      <td className="px-4 py-4 whitespace-nowrap text-xs">
+                        {(event.status === "published" || event.status === "archived") ? (
+                          <div className="flex items-center gap-1.5">
+                            <UserCheck className="w-3.5 h-3.5 text-green-400" />
+                            <span className="text-green-300 font-medium">
+                              {event.registeredCount ?? 0}
+                              {event.capacity
+                                ? <span className="text-slate-500"> / {event.capacity}</span>
+                                : null}
+                            </span>
                           </div>
                         ) : (
                           <span className="text-slate-600">—</span>
@@ -258,6 +425,16 @@ export default function OrganizerDashboard() {
                             label="View"
                             onClick={() => navigate(`/events/${event._id}`)}
                           />
+
+                          {/* Attendees — published or archived only */}
+                          {(event.status === "published" || event.status === "archived") && (
+                            <ActionBtn
+                              icon={Users}
+                              label="Attendees"
+                              variant="info"
+                              onClick={() => setAttendeesEvent(event)}
+                            />
+                          )}
 
                           {/* Edit — not allowed if archived */}
                           {event.status !== "archived" && (
@@ -299,12 +476,14 @@ export default function OrganizerDashboard() {
           )}
         </div>
 
-        {/* Approval info banner */}
+        {/* Approval info banners */}
         {counts.pending > 0 && (
           <div className="glass-card p-4 flex items-center gap-3 border-amber-500/20">
             <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
             <p className="text-sm text-amber-300">
-              <span className="font-semibold">{counts.pending} event{counts.pending > 1 ? "s are" : " is"} waiting for admin approval.</span>
+              <span className="font-semibold">
+                {counts.pending} event{counts.pending > 1 ? "s are" : " is"} waiting for admin approval.
+              </span>
               {" "}You can publish once approved.
             </p>
           </div>
@@ -313,7 +492,9 @@ export default function OrganizerDashboard() {
           <div className="glass-card p-4 flex items-center gap-3 border-green-500/20">
             <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
             <p className="text-sm text-green-300">
-              <span className="font-semibold">{counts.approved} event{counts.approved > 1 ? "s are" : " is"} approved</span>
+              <span className="font-semibold">
+                {counts.approved} event{counts.approved > 1 ? "s are" : " is"} approved
+              </span>
               {" "}and ready to publish — click Publish in the table above.
             </p>
           </div>
@@ -347,6 +528,12 @@ export default function OrganizerDashboard() {
           </button>
         </div>
       </Modal>
+
+      {/* Attendees modal */}
+      <AttendeesModal
+        event={attendeesEvent}
+        onClose={() => setAttendeesEvent(null)}
+      />
     </Layout>
   );
 }

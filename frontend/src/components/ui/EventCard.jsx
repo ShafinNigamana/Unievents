@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, MapPin, Clock, Tag, ArrowRight, Star, Bookmark } from "lucide-react";
+import { Calendar, MapPin, Clock, Tag, ArrowRight, Star, Bookmark, Heart } from "lucide-react";
 import Badge from "./Badge";
 import { useAuth } from "../../context/AuthContext";
 import api from "../../services/api";
@@ -26,22 +26,57 @@ function formatDateRange(start, end) {
   return `${s} – ${e}`;
 }
 
-export default function EventCard({ event, onClick, savedEventIds = [], onSaveToggle, allowUnsave = false }) {
+/**
+ * EventCard
+ *
+ * Props:
+ * - event         : event object
+ * - onClick       : optional custom click handler
+ * - savedEventIds : array of saved event _id strings (for bookmark state)
+ * - onSaveToggle  : callback(eventId, newSavedState) when bookmark toggled
+ * - allowUnsave   : boolean — when true, shows bookmark even on archived events
+ */
+export default function EventCard({
+  event,
+  onClick,
+  savedEventIds = [],
+  onSaveToggle,
+  allowUnsave = false,
+}) {
   const navigate = useNavigate();
   const { user } = useAuth();
 
   const isStudent = user?.role === "student";
   const isPublished = event.status === "published";
   const isArchived = event.status === "archived";
+
+  // Bookmark — student + published, or student + archived + allowUnsave
   const canSave = isStudent && (isPublished || (isArchived && allowUnsave));
 
-  // Sync isSaved whenever savedEventIds prop updates (async fetch case)
+  // Interest — students on published events only
+  const canInterest = isStudent && isPublished;
+
+  // ── Bookmark state ──
   const [isSaved, setIsSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // ── Interest state ──
+  const [isInterested, setIsInterested] = useState(false);
+  const [interestCount, setInterestCount] = useState(event.interestedCount ?? 0);
+  const [interestLoading, setInterestLoading] = useState(false);
+
+  // Sync bookmark from parent prop (handles async fetch)
   useEffect(() => {
     setIsSaved(savedEventIds.includes(event._id));
   }, [savedEventIds, event._id]);
+
+  // Sync interest from event data
+  useEffect(() => {
+    if (user && Array.isArray(event.interestedUsers)) {
+      setIsInterested(event.interestedUsers.includes(user.id));
+    }
+    setInterestCount(event.interestedCount ?? 0);
+  }, [event.interestedUsers, event.interestedCount, user]);
 
   const handleClick = () => {
     if (onClick) {
@@ -52,20 +87,46 @@ export default function EventCard({ event, onClick, savedEventIds = [], onSaveTo
   };
 
   const handleSave = async (e) => {
-    e.stopPropagation(); // prevent card navigation
+    e.stopPropagation();
     if (saving) return;
 
     setSaving(true);
     const prev = isSaved;
-    setIsSaved(!prev); // optimistic toggle
+    setIsSaved(!prev);
 
     try {
       await api.post(`/users/saved-events/${event._id}`);
       if (onSaveToggle) onSaveToggle(event._id, !prev);
     } catch {
-      setIsSaved(prev); // revert on error
+      setIsSaved(prev);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleInterest = async (e) => {
+    e.stopPropagation();
+    if (interestLoading) return;
+
+    setInterestLoading(true);
+    const prev = isInterested;
+    const prevCount = interestCount;
+
+    // Optimistic update
+    setIsInterested(!prev);
+    setInterestCount(prev ? Math.max(0, prevCount - 1) : prevCount + 1);
+
+    try {
+      const res = await api.post(`/events/${event._id}/interest`);
+      // Sync with actual server values
+      setIsInterested(res.data.interested);
+      setInterestCount(res.data.interestedCount);
+    } catch {
+      // Revert on error
+      setIsInterested(prev);
+      setInterestCount(prevCount);
+    } finally {
+      setInterestLoading(false);
     }
   };
 
@@ -91,7 +152,7 @@ export default function EventCard({ event, onClick, savedEventIds = [], onSaveTo
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0c0e1a] via-transparent to-transparent" />
 
-        {/* Bookmark button — students only, published events only */}
+        {/* Bookmark button — top right of poster */}
         {canSave && (
           <button
             onClick={handleSave}
@@ -168,8 +229,17 @@ export default function EventCard({ event, onClick, savedEventIds = [], onSaveTo
           {/* Venue */}
           {event.venue && (
             <div className="flex items-center gap-2 text-xs text-slate-400">
-              <MapPin className={`w-3.5 h-3.5 flex-shrink-0 ${event.venue === "To be announced" ? "text-amber-400" : "text-brand-400"}`} />
-              <span className={event.venue === "To be announced" ? "text-amber-400/80 italic" : "truncate"}>
+              <MapPin
+                className={`w-3.5 h-3.5 flex-shrink-0 ${event.venue === "To be announced" ? "text-amber-400" : "text-brand-400"
+                  }`}
+              />
+              <span
+                className={
+                  event.venue === "To be announced"
+                    ? "text-amber-400/80 italic"
+                    : "truncate"
+                }
+              >
                 {event.venue}
               </span>
             </div>
@@ -194,10 +264,49 @@ export default function EventCard({ event, onClick, savedEventIds = [], onSaveTo
           </div>
         </div>
 
-        {/* Footer CTA */}
-        <div className="flex items-center gap-1 text-xs text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity pt-1">
-          <span>View details</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+        {/* Footer row — interest button left, view details right */}
+        <div className="flex items-center justify-between pt-1">
+
+          {/* Interest button — students on published only */}
+          {canInterest ? (
+            <button
+              onClick={handleInterest}
+              disabled={interestLoading}
+              title={isInterested ? "Remove interest" : "Mark as interested"}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium
+                border transition-all duration-200
+                ${isInterested
+                  ? "bg-pink-500/20 border-pink-500/40 text-pink-300"
+                  : "bg-white/5 border-white/10 text-slate-400 hover:bg-pink-500/15 hover:border-pink-500/30 hover:text-pink-300"
+                }
+                ${interestLoading ? "opacity-60 cursor-not-allowed" : ""}
+              `}
+            >
+              <Heart
+                className="w-3 h-3"
+                fill={isInterested ? "currentColor" : "transparent"}
+              />
+              <span>
+                {interestCount > 0 ? interestCount : "Interested"}
+              </span>
+            </button>
+          ) : (
+            /* Non-students: show count only when > 0, no button */
+            interestCount > 0 ? (
+              <div className="flex items-center gap-1 text-xs text-slate-500">
+                <Heart className="w-3 h-3 fill-pink-400 text-pink-400" />
+                <span>{interestCount}</span>
+              </div>
+            ) : (
+              <div />
+            )
+          )}
+
+          {/* View details */}
+          <div className="flex items-center gap-1 text-xs text-brand-400 opacity-0 group-hover:opacity-100 transition-opacity">
+            <span>View details</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </div>
         </div>
       </div>
     </div>

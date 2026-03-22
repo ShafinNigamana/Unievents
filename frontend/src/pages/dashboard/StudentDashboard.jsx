@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Calendar, TrendingUp, Archive, ArrowRight,
-  Sparkles, Clock, Bookmark
+  Sparkles, Clock, Bookmark, ClipboardList,
+  CheckCircle2
 } from "lucide-react";
 import Layout from "../../components/layout/Layout";
 import EventCard from "../../components/ui/EventCard";
@@ -31,6 +32,7 @@ export default function StudentDashboard() {
   const [events, setEvents] = useState([]);
   const [archived, setArchived] = useState([]);
   const [saved, setSaved] = useState([]);
+  const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -39,22 +41,25 @@ export default function StudentDashboard() {
       setLoading(true);
       setError("");
       try {
-        const [pubRes, archRes, savedRes] = await Promise.allSettled([
+        const [pubRes, archRes, savedRes, regRes] = await Promise.allSettled([
           api.get("/events"),
           api.get("/events/archive"),
           api.get("/users/saved-events"),
+          api.get("/users/registrations"),
         ]);
 
-        const pubData = pubRes.status === "fulfilled"
-          ? (pubRes.value.data?.data ?? []) : [];
-        const archData = archRes.status === "fulfilled"
-          ? (archRes.value.data?.data ?? []) : [];
-        const savedData = savedRes.status === "fulfilled"
-          ? (savedRes.value.data?.data ?? []) : [];
-
-        setEvents(pubData);
-        setArchived(archData);
-        setSaved(savedData);
+        setEvents(
+          pubRes.status === "fulfilled" ? (pubRes.value.data?.data ?? []) : []
+        );
+        setArchived(
+          archRes.status === "fulfilled" ? (archRes.value.data?.data ?? []) : []
+        );
+        setSaved(
+          savedRes.status === "fulfilled" ? (savedRes.value.data?.data ?? []) : []
+        );
+        setRegistrations(
+          regRes.status === "fulfilled" ? (regRes.value.data?.data ?? []) : []
+        );
       } catch {
         setError("Failed to load events.");
       } finally {
@@ -79,6 +84,9 @@ export default function StudentDashboard() {
     (e) => e.eventDate && new Date(e.eventDate) >= now
   );
 
+  // Active registrations only
+  const activeRegistrations = registrations.filter((r) => r.status === "registered");
+
   const greeting = () => {
     const h = new Date().getHours();
     if (h < 12) return "Good morning";
@@ -91,12 +99,12 @@ export default function StudentDashboard() {
       <div className="space-y-8 animate-fade-in">
 
         {/* Hero banner */}
-        <div className="relative overflow-hidden rounded-2xl border border-white/10 p-8"
-          style={{ background: "linear-gradient(135deg, #1a0a3e 0%, #14142b 60%, #0d1a3a 100%)" }}>
-
+        <div
+          className="relative overflow-hidden rounded-2xl border border-white/10 p-8"
+          style={{ background: "linear-gradient(135deg, #1a0a3e 0%, #14142b 60%, #0d1a3a 100%)" }}
+        >
           <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-brand-500/10 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full bg-purple-600/10 pointer-events-none" />
-
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-5 h-5" style={{ color: "#a78bfa" }} />
@@ -125,14 +133,14 @@ export default function StudentDashboard() {
               color="bg-purple-600/80" bg="border-purple-500/20"
             />
             <StatCard
-              icon={Archive} label="Archived"
-              value={archived.length}
+              icon={Bookmark} label="Saved"
+              value={saved.length}
               color="bg-blue-600/80" bg="border-blue-500/20"
             />
             <StatCard
-              icon={Bookmark} label="Saved"
-              value={saved.length}
-              color="bg-brand-600/80" bg="border-brand-500/20"
+              icon={ClipboardList} label="Registered"
+              value={activeRegistrations.length}
+              color="bg-green-600/80" bg="border-green-500/20"
             />
           </div>
         )}
@@ -182,6 +190,73 @@ export default function StudentDashboard() {
             </div>
           )}
         </section>
+
+        {/* My Registrations section */}
+        {!loading && activeRegistrations.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-400" />
+                <h2 className="text-green-300">My Registrations</h2>
+              </div>
+              <button
+                onClick={() => navigate("/my-registrations")}
+                className="flex items-center gap-1.5 text-sm text-green-400 hover:text-green-300 transition-colors"
+              >
+                View all <ArrowRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {activeRegistrations.slice(0, 3).map((reg) => {
+                const event = reg.eventId;
+                if (!event) return null;
+                return (
+                  <div
+                    key={reg._id}
+                    onClick={() => navigate(`/events/${event._id}`)}
+                    className="glass-card p-4 cursor-pointer hover:border-green-500/30 hover:shadow-glow-sm transition-all duration-200 group"
+                  >
+                    {/* Poster thumbnail */}
+                    <div className="w-full h-28 rounded-xl overflow-hidden mb-3 bg-gradient-to-br from-green-600/20 to-brand-600/20 flex-shrink-0">
+                      {event.posterUrl ? (
+                        <img
+                          src={event.posterUrl}
+                          alt={event.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Calendar className="w-8 h-8 text-green-500/30" />
+                        </div>
+                      )}
+                    </div>
+
+                    <p className="text-sm font-semibold text-white group-hover:text-green-300 transition-colors line-clamp-2 leading-snug mb-2">
+                      {event.title}
+                    </p>
+
+                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                      <Calendar className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
+                      <span>
+                        {event.eventDate
+                          ? new Date(event.eventDate).toLocaleDateString("en-IN", {
+                            day: "numeric", month: "short", year: "numeric",
+                          })
+                          : "—"}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 mt-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
+                      <span className="text-[11px] text-green-400 font-medium">Registered</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Saved events section */}
         {!loading && saved.length > 0 && (

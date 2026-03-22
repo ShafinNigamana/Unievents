@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
@@ -11,14 +11,15 @@ import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import Events from "../pages/events/Events";
 import EventDetail from "../pages/events/EventDetail";
 import EventForm from "../pages/events/EventForm";
-import SavedEvents from "../pages/events/SavedEvents";
+import SavedEvents from "../pages/events/savedEvents";
+import MyRegistrations from "../pages/events/MyRegistrations";
 
 import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function AppRoutes() {
   return (
     <Routes>
-      {/* Default — public landing page */}
+      {/* Public landing page */}
       <Route path="/" element={<Landing />} />
 
       {/* Auth */}
@@ -54,6 +55,16 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["student"]}>
             <SavedEvents />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ── Student: My Registrations ── */}
+      <Route
+        path="/my-registrations"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <MyRegistrations />
           </ProtectedRoute>
         }
       />

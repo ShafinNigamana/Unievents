@@ -4,7 +4,7 @@ import {
   Calendar, MapPin, Clock, Tag, ArrowLeft,
   User, Archive, FileText,
   Star as StarIcon, MessageSquare, Send, Trash2, Edit2, Loader2,
-  Bookmark
+  Bookmark, Heart, CheckCircle2, XCircle, Users
 } from "lucide-react";
 import Layout from "../../components/layout/Layout";
 import Badge from "../../components/ui/Badge";
@@ -50,18 +50,29 @@ export default function EventDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Save state
   const isStudent = user?.role === "student";
+
+  // ── Save state ──
   const [isSaved, setIsSaved] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  // Reviews state
+  // ── Interest state ──
+  const [isInterested, setIsInterested] = useState(false);
+  const [interestCount, setInterestCount] = useState(0);
+  const [interestLoading, setInterestLoading] = useState(false);
+
+  // ── Registration state ──
+  const [isRegistered, setIsRegistered] = useState(false);
+  const [registrationLoading, setRegistrationLoading] = useState(false);
+  const [registrationError, setRegistrationError] = useState("");
+
+  // ── Reviews state ──
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(true);
   const [userReview, setUserReview] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  // Form state
+  // ── Review form state ──
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -70,13 +81,20 @@ export default function EventDetail() {
   const fetchEvent = useCallback(async () => {
     try {
       const res = await api.get(`/events/${id}`);
-      setEvent(res.data?.data);
+      const data = res.data?.data;
+      setEvent(data);
+
+      // Sync interest state
+      if (data && user && Array.isArray(data.interestedUsers)) {
+        setIsInterested(data.interestedUsers.includes(user.id));
+      }
+      setInterestCount(data?.interestedCount ?? 0);
     } catch (err) {
       setError("Event not found or unavailable.");
     } finally {
       setLoading(false);
     }
-  }, [id]);
+  }, [id, user]);
 
   const fetchReviews = useCallback(async () => {
     setReviewsLoading(true);
@@ -100,7 +118,7 @@ export default function EventDetail() {
     }
   }, [id, user]);
 
-  // Fetch initial saved state for student
+  // Fetch saved state
   const fetchSavedState = useCallback(async () => {
     if (!isStudent) return;
     try {
@@ -108,7 +126,22 @@ export default function EventDetail() {
       const savedIds = (res.data?.data ?? []).map((e) => e._id);
       setIsSaved(savedIds.includes(id));
     } catch {
-      // silently fail — save state is non-critical
+      // silently fail
+    }
+  }, [id, isStudent]);
+
+  // Fetch registration state
+  const fetchRegistrationState = useCallback(async () => {
+    if (!isStudent) return;
+    try {
+      const res = await api.get("/users/registrations");
+      const registrations = res.data?.data ?? [];
+      const found = registrations.find(
+        (r) => r.eventId?._id === id || r.eventId === id
+      );
+      setIsRegistered(found?.status === "registered");
+    } catch {
+      // silently fail
     }
   }, [id, isStudent]);
 
@@ -116,30 +149,83 @@ export default function EventDetail() {
     fetchEvent();
     fetchReviews();
     fetchSavedState();
-  }, [fetchEvent, fetchReviews, fetchSavedState]);
+    fetchRegistrationState();
+  }, [fetchEvent, fetchReviews, fetchSavedState, fetchRegistrationState]);
 
+  // ── Save handler ──
   const handleSave = async () => {
     if (saving) return;
     setSaving(true);
     const prev = isSaved;
-    setIsSaved(!prev); // optimistic
-
+    setIsSaved(!prev);
     try {
       await api.post(`/users/saved-events/${id}`);
     } catch {
-      setIsSaved(prev); // revert on error
+      setIsSaved(prev);
     } finally {
       setSaving(false);
     }
   };
 
+  // ── Interest handler ──
+  const handleInterest = async () => {
+    if (interestLoading) return;
+    setInterestLoading(true);
+    const prev = isInterested;
+    const prevCount = interestCount;
+    setIsInterested(!prev);
+    setInterestCount(prev ? Math.max(0, prevCount - 1) : prevCount + 1);
+    try {
+      const res = await api.post(`/events/${id}/interest`);
+      setIsInterested(res.data.interested);
+      setInterestCount(res.data.interestedCount);
+    } catch {
+      setIsInterested(prev);
+      setInterestCount(prevCount);
+    } finally {
+      setInterestLoading(false);
+    }
+  };
+
+  // ── Register handler ──
+  const handleRegister = async () => {
+    if (registrationLoading) return;
+    setRegistrationLoading(true);
+    setRegistrationError("");
+    try {
+      await api.post(`/events/${id}/register`);
+      setIsRegistered(true);
+      fetchEvent(); // refresh registeredCount
+    } catch (err) {
+      setRegistrationError(err.response?.data?.error || "Registration failed.");
+    } finally {
+      setRegistrationLoading(false);
+    }
+  };
+
+  // ── Cancel registration handler ──
+  const handleCancelRegistration = async () => {
+    if (registrationLoading) return;
+    setRegistrationLoading(true);
+    setRegistrationError("");
+    try {
+      await api.delete(`/events/${id}/register`);
+      setIsRegistered(false);
+      fetchEvent(); // refresh registeredCount
+    } catch (err) {
+      setRegistrationError(err.response?.data?.error || "Cancellation failed.");
+    } finally {
+      setRegistrationLoading(false);
+    }
+  };
+
+  // ── Review handlers ──
   const handleSubmitReview = async (e) => {
     e.preventDefault();
     if (rating === 0) {
       setFormError("Please select a rating.");
       return;
     }
-
     setSubmitting(true);
     setFormError("");
     try {
@@ -161,7 +247,6 @@ export default function EventDetail() {
   const handleDeleteReview = async () => {
     if (!userReview) return;
     if (!window.confirm("Are you sure you want to delete your review?")) return;
-
     setSubmitting(true);
     try {
       await api.delete(`/reviews/${userReview._id}`);
@@ -195,19 +280,25 @@ export default function EventDetail() {
   const timeDisplay =
     event.startTime && event.endTime
       ? `${event.startTime} – ${event.endTime}`
-      : event.startTime
-        ? event.startTime
-        : null;
+      : event.startTime ?? null;
 
   const canSave = isStudent && event.status === "published";
-  const canReview = isStudent && event.createdBy !== user.id && ["published", "archived"].includes(event.status);
+  const canInterest = isStudent && event.status === "published";
+  const canRegister = isStudent && event.status === "published";
+  const canReview = isStudent &&
+    event.createdBy !== user.id &&
+    ["published", "archived"].includes(event.status);
+
+  const isFull = event.capacity !== null &&
+    event.registeredCount >= event.capacity &&
+    !isRegistered;
 
   return (
     <Layout>
       <div className="max-w-3xl mx-auto animate-slide-up space-y-6 pb-20">
 
-        {/* Back + Save row */}
-        <div className="flex items-center justify-between">
+        {/* Back + Action buttons row */}
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors"
@@ -216,37 +307,67 @@ export default function EventDetail() {
             Back to events
           </button>
 
-          {/* Save button — students + published only */}
-          {canSave && (
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              title={isSaved ? "Remove from saved" : "Save this event"}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium
-                transition-all duration-200
-                ${isSaved
-                  ? "bg-brand-500/20 border-brand-500/40 text-brand-300 hover:bg-brand-500/30"
-                  : "bg-white/5 border-white/10 text-slate-400 hover:bg-brand-500/15 hover:border-brand-500/30 hover:text-brand-300"
+          <div className="flex items-center gap-2 flex-wrap">
+
+            {/* Interest button */}
+            {canInterest && (
+              <button
+                onClick={handleInterest}
+                disabled={interestLoading}
+                title={isInterested ? "Remove interest" : "Mark as interested"}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium
+                  transition-all duration-200
+                  ${isInterested
+                    ? "bg-pink-500/20 border-pink-500/40 text-pink-300 hover:bg-pink-500/30"
+                    : "bg-white/5 border-white/10 text-slate-400 hover:bg-pink-500/15 hover:border-pink-500/30 hover:text-pink-300"
+                  }
+                  ${interestLoading ? "opacity-60 cursor-not-allowed" : ""}
+                `}
+              >
+                {interestLoading
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <Heart className="w-4 h-4" fill={isInterested ? "currentColor" : "transparent"} />
                 }
-                ${saving ? "opacity-60 cursor-not-allowed" : ""}
-              `}
-            >
-              {saving ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Bookmark
-                  className="w-4 h-4"
-                  fill={isSaved ? "currentColor" : "transparent"}
-                />
-              )}
-              {isSaved ? "Saved" : "Save Event"}
-            </button>
-          )}
+                Interested
+                {interestCount > 0 && <span className="opacity-70">({interestCount})</span>}
+              </button>
+            )}
+
+            {/* Save button */}
+            {canSave && (
+              <button
+                onClick={handleSave}
+                disabled={saving}
+                title={isSaved ? "Remove from saved" : "Save this event"}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium
+                  transition-all duration-200
+                  ${isSaved
+                    ? "bg-brand-500/20 border-brand-500/40 text-brand-300 hover:bg-brand-500/30"
+                    : "bg-white/5 border-white/10 text-slate-400 hover:bg-brand-500/15 hover:border-brand-500/30 hover:text-brand-300"
+                  }
+                  ${saving ? "opacity-60 cursor-not-allowed" : ""}
+                `}
+              >
+                {saving
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <Bookmark className="w-4 h-4" fill={isSaved ? "currentColor" : "transparent"} />
+                }
+                {isSaved ? "Saved" : "Save Event"}
+              </button>
+            )}
+
+            {/* Interest count for non-students */}
+            {!isStudent && interestCount > 0 && (
+              <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-sm text-slate-400">
+                <Heart className="w-4 h-4 fill-pink-400 text-pink-400" />
+                <span>{interestCount} interested</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Hero card */}
         <div className="glass-card overflow-hidden">
-          {/* Poster */}
           {event.posterUrl && (
             <div className="relative w-full max-h-80 overflow-hidden">
               <img
@@ -259,7 +380,7 @@ export default function EventDetail() {
           )}
 
           <div className="p-8">
-            {/* Badges + Rating Summary */}
+            {/* Badges + Rating */}
             <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
               <div className="flex items-center gap-2 flex-wrap">
                 <Badge type="status" value={event.status} />
@@ -313,6 +434,21 @@ export default function EventDetail() {
                 value={event.organizer?.name ?? event.organizer?.email ?? null}
                 color="text-purple-400"
               />
+              {/* Capacity row */}
+              {event.status === "published" && (
+                <MetaRow
+                  icon={Users}
+                  label="Capacity"
+                  value={
+                    event.capacity
+                      ? `${event.registeredCount} / ${event.capacity} registered`
+                      : event.registeredCount > 0
+                        ? `${event.registeredCount} registered`
+                        : null
+                  }
+                  color={isFull ? "text-red-400" : "text-green-400"}
+                />
+              )}
             </div>
 
             {/* Description */}
@@ -325,6 +461,57 @@ export default function EventDetail() {
                 <p className="text-slate-300 leading-relaxed text-sm whitespace-pre-wrap">
                   {event.description}
                 </p>
+              </div>
+            )}
+
+            {/* ── Registration Action ── */}
+            {canRegister && (
+              <div className="mt-6 pt-6 border-t border-white/8">
+                {registrationError && (
+                  <p className="text-xs text-red-400 mb-3">{registrationError}</p>
+                )}
+
+                {isRegistered ? (
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-green-500/10 border border-green-500/25 text-green-400 text-sm font-medium">
+                      <CheckCircle2 className="w-4 h-4" />
+                      You are registered
+                    </div>
+                    <button
+                      onClick={handleCancelRegistration}
+                      disabled={registrationLoading}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium
+                        bg-white/5 border-white/10 text-slate-400 hover:bg-red-500/15 hover:border-red-500/30 hover:text-red-300
+                        transition-all duration-200
+                        ${registrationLoading ? "opacity-60 cursor-not-allowed" : ""}
+                      `}
+                    >
+                      {registrationLoading
+                        ? <Loader2 className="w-4 h-4 animate-spin" />
+                        : <XCircle className="w-4 h-4" />
+                      }
+                      Cancel Registration
+                    </button>
+                  </div>
+                ) : isFull ? (
+                  <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-sm font-medium w-fit">
+                    <Users className="w-4 h-4" />
+                    Event is full
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleRegister}
+                    disabled={registrationLoading}
+                    className={`button-primary
+                      ${registrationLoading ? "opacity-60 cursor-not-allowed" : ""}
+                    `}
+                  >
+                    {registrationLoading
+                      ? <><Loader2 className="w-4 h-4 animate-spin" /> Registering…</>
+                      : <><CheckCircle2 className="w-4 h-4" /> Register for Event</>
+                    }
+                  </button>
+                )}
               </div>
             )}
           </div>
@@ -342,15 +529,12 @@ export default function EventDetail() {
 
         {/* ── Reviews Section ── */}
         <div className="space-y-6 pt-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="w-5 h-5 text-brand-400" />
-              <h2 className="text-xl font-bold text-white">Reviews</h2>
-              <span className="text-sm text-slate-500 ml-1">({reviews.length})</span>
-            </div>
+          <div className="flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-brand-400" />
+            <h2 className="text-xl font-bold text-white">Reviews</h2>
+            <span className="text-sm text-slate-500 ml-1">({reviews.length})</span>
           </div>
 
-          {/* Submission Form */}
           {canReview && (!userReview || isEditing) && (
             <div className="glass-card p-6 border-brand-500/20 animate-fade-in">
               <h3 className="text-sm font-semibold text-white mb-4">
@@ -373,22 +557,14 @@ export default function EventDetail() {
                 </div>
                 {formError && <p className="text-xs text-red-500">{formError}</p>}
                 <div className="flex items-center gap-3">
-                  <button
-                    type="submit"
-                    disabled={submitting}
-                    className="button-primary flex items-center gap-2"
-                  >
+                  <button type="submit" disabled={submitting} className="button-primary flex items-center gap-2">
                     {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
                     {isEditing ? "Update Review" : "Submit Review"}
                   </button>
                   {isEditing && (
                     <button
                       type="button"
-                      onClick={() => {
-                        setIsEditing(false);
-                        setRating(userReview.rating);
-                        setComment(userReview.comment || "");
-                      }}
+                      onClick={() => { setIsEditing(false); setRating(userReview.rating); setComment(userReview.comment || ""); }}
                       className="button-ghost"
                     >
                       Cancel
@@ -399,39 +575,27 @@ export default function EventDetail() {
             </div>
           )}
 
-          {/* User's Existing Review */}
           {userReview && !isEditing && (
             <div className="glass-card p-6 border-brand-500/30 bg-brand-500/5">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-bold text-brand-400 uppercase tracking-widest">Your Review</span>
                 <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-                    title="Edit review"
-                  >
+                  <button onClick={() => setIsEditing(true)} className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-lg transition-all" title="Edit review">
                     <Edit2 size={14} />
                   </button>
-                  <button
-                    onClick={handleDeleteReview}
-                    className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all"
-                    title="Delete review"
-                  >
+                  <button onClick={handleDeleteReview} className="p-2 text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all" title="Delete review">
                     <Trash2 size={14} />
                   </button>
                 </div>
               </div>
               <div className="flex items-center gap-3 mb-2">
                 <StarRating rating={userReview.rating} size={16} />
-                <span className="text-xs text-slate-500">
-                  {new Date(userReview.createdAt).toLocaleDateString()}
-                </span>
+                <span className="text-xs text-slate-500">{new Date(userReview.createdAt).toLocaleDateString()}</span>
               </div>
               <p className="text-slate-300 text-sm italic">"{userReview.comment || "No comment provided."}"</p>
             </div>
           )}
 
-          {/* All Reviews List */}
           <div className="space-y-4">
             {reviewsLoading ? (
               <div className="text-center py-10">
@@ -443,28 +607,16 @@ export default function EventDetail() {
                 <p className="text-slate-500 text-sm">No reviews yet. Be the first to rate!</p>
               </div>
             ) : (
-              reviews
-                .filter(r => r._id !== userReview?._id)
-                .map((r) => (
-                  <div key={r._id} className="glass-card p-5 border-white/5">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-semibold text-white">
-                        {r.userId?.name || "Anonymous Student"}
-                      </span>
-                      <span className="text-[10px] text-slate-500 uppercase">
-                        {new Date(r.createdAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className="mb-2">
-                      <StarRating rating={r.rating} size={14} />
-                    </div>
-                    {r.comment && (
-                      <p className="text-slate-400 text-sm leading-relaxed">
-                        {r.comment}
-                      </p>
-                    )}
+              reviews.filter(r => r._id !== userReview?._id).map((r) => (
+                <div key={r._id} className="glass-card p-5 border-white/5">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-semibold text-white">{r.userId?.name || "Anonymous Student"}</span>
+                    <span className="text-[10px] text-slate-500 uppercase">{new Date(r.createdAt).toLocaleDateString()}</span>
                   </div>
-                ))
+                  <div className="mb-2"><StarRating rating={r.rating} size={14} /></div>
+                  {r.comment && <p className="text-slate-400 text-sm leading-relaxed">{r.comment}</p>}
+                </div>
+              ))
             )}
           </div>
         </div>

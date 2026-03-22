@@ -1,7 +1,8 @@
 import { NavLink, useNavigate, Link } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Plus, LogOut,
-  Archive, ChevronDown, Menu, X, Sun, Moon, Bookmark
+  Archive, ChevronDown, Menu, X, Sun, Moon,
+  Bookmark, ClipboardList
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
@@ -34,6 +35,7 @@ function NavLinks({ role, onClose }) {
       <NavItem to="/events" icon={Calendar} label="Events" {...p} />
       <NavItem to="/events/archive" icon={Archive} label="Archive" {...p} />
       <NavItem to="/saved-events" icon={Bookmark} label="Saved" {...p} />
+      <NavItem to="/my-registrations" icon={ClipboardList} label="Registrations" {...p} />
     </>
   );
   if (role === "organizer") return (
@@ -135,7 +137,7 @@ export default function Navbar() {
                 : <Moon className="w-4 h-4" />}
             </button>
 
-            {/* User dropdown trigger */}
+            {/* User dropdown */}
             {user && (
               <div className="hidden md:block relative" ref={dropRef}>
                 <button
@@ -156,13 +158,11 @@ export default function Navbar() {
                   />
                 </button>
 
-                {/* Dropdown panel */}
                 {dropOpen && (
                   <div
                     className="absolute right-0 mt-2 w-60 z-50 rounded-2xl shadow-2xl border border-white/10 overflow-hidden animate-fade-in"
                     style={{ background: "#14142b" }}
                   >
-                    {/* User info */}
                     <div className="px-4 py-3 bg-white/5 border-b border-white/8">
                       <div className="flex items-center gap-3">
                         <Avatar name={user.name} />
@@ -177,8 +177,6 @@ export default function Navbar() {
                         </div>
                       </div>
                     </div>
-
-                    {/* Sign out */}
                     <div className="p-1.5">
                       <button
                         onClick={handleLogout}
