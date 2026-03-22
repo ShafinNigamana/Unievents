@@ -58,6 +58,36 @@ const eventSchema = new mongoose.Schema(
     },
 
     /* =========================
+       INTEREST — Phase 2
+    ========================= */
+
+    interestedUsers: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
+
+    interestedCount: {
+      type: Number,
+      default: 0,
+    },
+
+    /* =========================
+       REGISTRATION — Phase 2
+    ========================= */
+
+    capacity: {
+      type: Number,
+      default: null, // null = unlimited
+    },
+
+    registeredCount: {
+      type: Number,
+      default: 0,
+    },
+
+    /* =========================
        OWNERSHIP
     ========================= */
 

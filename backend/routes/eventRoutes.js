@@ -8,6 +8,10 @@ const {
   softDeleteEvent,
   restoreEvent,
   permanentDeleteEvent,
+  toggleInterest,
+  registerEvent,
+  cancelRegistration,
+  getEventAttendees,
   getPublishedEvents,
   getSingleEvent,
   getArchivedEvents,
@@ -15,6 +19,12 @@ const {
   getAllEvents,
   getSoftDeletedEvents,
 } = require("../controllers/eventController");
+
+// Debug: verify handler functions are imported correctly
+console.log('registerEvent type:', typeof registerEvent);
+console.log('cancelRegistration type:', typeof cancelRegistration);
+console.log('getEventAttendees type:', typeof getEventAttendees);
+
 
 const { protect, optionalAuth } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
@@ -77,6 +87,42 @@ router.post(
   authorizeRoles("organizer", "admin"),
   validateRequest(createEventSchema),
   createEvent
+);
+
+/* =========================
+   INTEREST TOGGLE
+========================= */
+
+router.post(
+  "/:id/interest",
+  protect,
+  authorizeRoles("student"),
+  toggleInterest
+);
+
+/* =========================
+   REGISTRATION
+========================= */
+
+router.post(
+  "/:id/register",
+  protect,
+  authorizeRoles("student"),
+  registerEvent
+);
+
+router.delete(
+  "/:id/register",
+  protect,
+  authorizeRoles("student"),
+  cancelRegistration
+);
+
+router.get(
+  "/:id/attendees",
+  protect,
+  authorizeRoles("organizer", "admin"),
+  getEventAttendees
 );
 
 /* =========================

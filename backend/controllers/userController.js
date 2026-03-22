@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Event = require("../models/Event");
+const Registration = require("../models/Registration");
 
 /* =========================
    TOGGLE SAVED EVENT
@@ -84,7 +85,7 @@ const getSavedEvents = async (req, res, next) => {
             path: "savedEvents",
             match: { isDeleted: false }, // exclude soft-deleted events
             select:
-                "title description category eventDate endDate startTime endTime venue tags posterUrl status approvalStatus averageRating reviewCount year createdBy",
+                "title description category eventDate endDate startTime endTime venue tags posterUrl status approvalStatus averageRating reviewCount interestedUsers interestedCount year createdBy",
         });
 
         // After populate, soft-deleted events resolve to null — filter them out
@@ -114,7 +115,40 @@ const getSavedEvents = async (req, res, next) => {
     }
 };
 
+
+/* =========================
+   GET MY REGISTRATIONS
+   GET /api/v1/users/registrations
+========================= */
+
+const getMyRegistrations = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+
+        const registrations = await Registration.find({ userId })
+            .populate({
+                path: "eventId",
+                match: { isDeleted: false },
+                select:
+                    "title description category eventDate endDate startTime endTime venue posterUrl status approvalStatus capacity registeredCount year",
+            })
+            .sort({ registeredAt: -1 });
+
+        // Filter out registrations where event was soft-deleted (populate returns null)
+        const validRegistrations = registrations.filter((r) => r.eventId !== null);
+
+        return res.status(200).json({
+            success: true,
+            count: validRegistrations.length,
+            data: validRegistrations,
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     toggleSavedEvent,
     getSavedEvents,
+    getMyRegistrations,
 };

@@ -1,4 +1,5 @@
 const Event = require("../models/Event");
+const Registration = require("../models/Registration");
 
 /* =========================
    AUTO ARCHIVE HELPER
@@ -37,7 +38,6 @@ const paginate = (query, req) => {
 
 const createEvent = async (req, res, next) => {
   try {
-    // Guard — req.user must be set by protect middleware
     if (!req.user || !req.user.id) {
       return res.status(401).json({
         success: false,
@@ -128,7 +128,6 @@ const changeEventStatus = async (req, res, next) => {
           error: "Event must be approved before publishing",
         });
       }
-
       event.status = "published";
       event.publishedAt = new Date();
     }
@@ -261,6 +260,77 @@ const permanentDeleteEvent = async (req, res, next) => {
       success: true,
       message: "Event permanently deleted",
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/* =========================
+   TOGGLE INTEREST
+   POST /api/v1/events/:id/interest
+========================= */
+
+const toggleInterest = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const event = await Event.findById(req.params.id);
+
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        error: "Event not found",
+      });
+    }
+
+    // Deleted events behave as if they don't exist — check before lifecycle
+    if (event.isDeleted) {
+      return res.status(404).json({
+        success: false,
+        error: "Event not found",
+      });
+    }
+
+    // Only published events can receive interest
+    if (event.status !== "published") {
+      return res.status(400).json({
+        success: false,
+        error: "Can only mark interest in published events",
+      });
+    }
+
+    const alreadyInterested = event.interestedUsers.some(
+      (id) => id.toString() === userId
+    );
+
+    if (alreadyInterested) {
+      // Remove interest
+      event.interestedUsers = event.interestedUsers.filter(
+        (id) => id.toString() !== userId
+      );
+      event.interestedCount = Math.max(0, event.interestedCount - 1);
+
+      await event.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Interest removed",
+        interested: false,
+        interestedCount: event.interestedCount,
+      });
+    } else {
+      // Add interest
+      event.interestedUsers.push(userId);
+      event.interestedCount = event.interestedUsers.length;
+
+      await event.save();
+
+      return res.status(200).json({
+        success: true,
+        message: "Interest marked",
+        interested: true,
+        interestedCount: event.interestedCount,
+      });
+    }
   } catch (error) {
     next(error);
   }
@@ -467,6 +537,211 @@ const getSoftDeletedEvents = async (req, res, next) => {
   }
 };
 
+
+/* =========================
+   REGISTER FOR EVENT
+   POST /api/v1/events/:id/register
+========================= */
+
+const registerEvent = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const event = await Event.findById(req.params.id);
+
+    // 1. Event exists
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        error: "Event not found",
+      });
+    }
+
+    // 2. Soft delete check
+    if (event.isDeleted) {
+      return res.status(404).json({
+        success: false,
+        error: "Event not found",
+      });
+    }
+
+    // 3. Lifecycle check — published only
+    if (event.status !== "published") {
+      return res.status(400).json({
+        success: false,
+        error: "Registration is only allowed for published events",
+      });
+    }
+
+    // 4. Check for existing registration
+    const existing = await Registration.findOne({ eventId: event._id, userId });
+
+    if (existing && existing.status === "registered") {
+      return res.status(400).json({
+        success: false,
+        error: "You are already registered for this event",
+      });
+    }
+
+    // 5. Capacity check
+    if (event.capacity !== null && event.registeredCount >= event.capacity) {
+      return res.status(400).json({
+        success: false,
+        error: "Event is at full capacity",
+      });
+    }
+
+    if (existing && existing.status === "cancelled") {
+      // Re-register — update existing record
+      existing.status = "registered";
+      existing.registeredAt = new Date();
+      existing.cancelledAt = null;
+      await existing.save();
+    } else {
+      // First time — create new registration
+      await Registration.create({
+        eventId: event._id,
+        userId,
+        status: "registered",
+        registeredAt: new Date(),
+      });
+    }
+
+    // Increment registeredCount
+    event.registeredCount = Math.max(0, event.registeredCount) + 1;
+    await event.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Successfully registered for event",
+      registeredCount: event.registeredCount,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/* =========================
+   CANCEL REGISTRATION
+   DELETE /api/v1/events/:id/register
+========================= */
+
+const cancelRegistration = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const event = await Event.findById(req.params.id);
+
+    // 1. Event exists
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        error: "Event not found",
+      });
+    }
+
+    // 2. Soft delete check
+    if (event.isDeleted) {
+      return res.status(404).json({
+        success: false,
+        error: "Event not found",
+      });
+    }
+
+    // 3. Find registration
+    const registration = await Registration.findOne({
+      eventId: event._id,
+      userId,
+    });
+
+    if (!registration) {
+      return res.status(404).json({
+        success: false,
+        error: "You are not registered for this event",
+      });
+    }
+
+    if (registration.status === "cancelled") {
+      return res.status(400).json({
+        success: false,
+        error: "Your registration is already cancelled",
+      });
+    }
+
+    // 4. Cancel registration
+    registration.status = "cancelled";
+    registration.cancelledAt = new Date();
+    await registration.save();
+
+    // 5. Decrement registeredCount — never below 0
+    event.registeredCount = Math.max(0, event.registeredCount - 1);
+    await event.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Registration cancelled successfully",
+      registeredCount: event.registeredCount,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/* =========================
+   GET EVENT ATTENDEES
+   GET /api/v1/events/:id/attendees
+   Organizer (own event) or Admin
+========================= */
+
+const getEventAttendees = async (req, res, next) => {
+  try {
+    const event = await Event.findById(req.params.id);
+
+    // 1. Event exists
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        error: "Event not found",
+      });
+    }
+
+    // 2. Soft delete check
+    if (event.isDeleted) {
+      return res.status(404).json({
+        success: false,
+        error: "Event not found",
+      });
+    }
+
+    // 3. Ownership check — organizer must own event, admin bypasses
+    if (
+      req.user.role === "organizer" &&
+      event.createdBy.toString() !== req.user.id
+    ) {
+      return res.status(403).json({
+        success: false,
+        error: "Forbidden: You do not own this event",
+      });
+    }
+
+    // 4. Fetch active registrations only
+    const registrations = await Registration.find({
+      eventId: event._id,
+      status: "registered",
+    })
+      .populate("userId", "name email enrollmentId")
+      .sort({ registeredAt: 1 });
+
+    return res.status(200).json({
+      success: true,
+      count: registrations.length,
+      capacity: event.capacity ?? "Unlimited",
+      registeredCount: event.registeredCount,
+      data: registrations,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createEvent,
   updateEvent,
@@ -475,6 +750,10 @@ module.exports = {
   softDeleteEvent,
   restoreEvent,
   permanentDeleteEvent,
+  toggleInterest,
+  registerEvent,
+  cancelRegistration,
+  getEventAttendees,
   getPublishedEvents,
   getSingleEvent,
   getArchivedEvents,
@@ -482,3 +761,4 @@ module.exports = {
   getAllEvents,
   getSoftDeletedEvents,
 };
+// Exported handlers verified: registerEvent, cancelRegistration, getEventAttendees

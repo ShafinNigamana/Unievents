@@ -1,7 +1,12 @@
 const express = require("express");
 const router = express.Router();
 
-const { toggleSavedEvent, getSavedEvents } = require("../controllers/userController");
+const {
+    toggleSavedEvent,
+    getSavedEvents,
+    getMyRegistrations,
+} = require("../controllers/userController");
+
 const { protect } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
 
@@ -9,9 +14,6 @@ const { authorizeRoles } = require("../middleware/roleMiddleware");
    SAVED EVENTS ROUTES
    All routes: authenticated + student only
 ========================= */
-
-// GET  /api/v1/users/saved-events      → get all saved events for logged-in student
-// POST /api/v1/users/saved-events/:eventId → toggle save/unsave
 
 router.get(
     "/saved-events",
@@ -25,6 +27,18 @@ router.post(
     protect,
     authorizeRoles("student"),
     toggleSavedEvent
+);
+
+/* =========================
+   REGISTRATION ROUTES
+   All routes: authenticated + student only
+========================= */
+
+router.get(
+    "/registrations",
+    protect,
+    authorizeRoles("student"),
+    getMyRegistrations
 );
 
 module.exports = router;
