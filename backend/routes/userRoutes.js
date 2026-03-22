@@ -7,6 +7,7 @@ const {
     getMyRegistrations,
     getMyProfile,
     updateProfile,
+    changePassword,
 } = require("../controllers/userController");
 
 const { protect } = require("../middleware/authMiddleware");
@@ -15,7 +16,16 @@ const { authorizeRoles } = require("../middleware/roleMiddleware");
 /* =========================
    PROFILE ROUTES
    Defined FIRST — before any /:param routes
+   Order matters: /me/password before /me/profile before /me
 ========================= */
+
+// PUT change password
+router.put(
+    "/me/password",
+    protect,
+    authorizeRoles("student"),
+    changePassword
+);
 
 // GET full aggregated profile
 router.get(

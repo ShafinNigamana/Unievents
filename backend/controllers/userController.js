@@ -2,6 +2,7 @@ const User = require("../models/User");
 const Event = require("../models/Event");
 const Registration = require("../models/Registration");
 const EventReview = require("../models/EventReview");
+const bcrypt = require("bcryptjs");
 
 /* =========================
    TOGGLE SAVED EVENT
@@ -248,7 +249,6 @@ const updateProfile = async (req, res, next) => {
 
         // ── Validation ──────────────────────────────────────────────
 
-        // Name
         if (name !== undefined) {
             if (typeof name !== "string" || name.trim().length < 2) {
                 return res.status(400).json({
@@ -258,7 +258,6 @@ const updateProfile = async (req, res, next) => {
             }
         }
 
-        // Email format
         if (email !== undefined) {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
@@ -267,8 +266,6 @@ const updateProfile = async (req, res, next) => {
                     error: "Invalid email format",
                 });
             }
-
-            // Email uniqueness — exclude current user
             const existing = await User.findOne({
                 email: email.toLowerCase().trim(),
                 _id: { $ne: userId },
@@ -281,7 +278,6 @@ const updateProfile = async (req, res, next) => {
             }
         }
 
-        // EnrollmentId uniqueness — exclude current user
         if (enrollmentId !== undefined && enrollmentId !== null) {
             const existingEnrollment = await User.findOne({
                 enrollmentId,
@@ -295,9 +291,8 @@ const updateProfile = async (req, res, next) => {
             }
         }
 
-        // Semester
         if (semester !== undefined && semester !== null) {
-            if (typeof semester !== "number" || !Number.isInteger(semester) || semester < 1 || semester > 12) {
+            if (typeof semester !== "number" || isNaN(semester) || !Number.isInteger(semester) || semester < 1 || semester > 12) {
                 return res.status(400).json({
                     success: false,
                     error: "Semester must be a whole number between 1 and 12",
@@ -305,9 +300,8 @@ const updateProfile = async (req, res, next) => {
             }
         }
 
-        // Year
         if (year !== undefined && year !== null) {
-            if (typeof year !== "number" || !Number.isInteger(year) || year < 1 || year > 6) {
+            if (typeof year !== "number" || isNaN(year) || !Number.isInteger(year) || year < 1 || year > 6) {
                 return res.status(400).json({
                     success: false,
                     error: "Year must be a whole number between 1 and 6",
@@ -315,9 +309,8 @@ const updateProfile = async (req, res, next) => {
             }
         }
 
-        // CGPA
         if (cgpa !== undefined && cgpa !== null) {
-            if (typeof cgpa !== "number" || cgpa < 0 || cgpa > 10) {
+            if (typeof cgpa !== "number" || isNaN(cgpa) || cgpa < 0 || cgpa > 10) {
                 return res.status(400).json({
                     success: false,
                     error: "CGPA must be a number between 0 and 10",
@@ -325,7 +318,6 @@ const updateProfile = async (req, res, next) => {
             }
         }
 
-        // Skills — must be array of strings
         if (skills !== undefined) {
             if (!Array.isArray(skills)) {
                 return res.status(400).json({
@@ -341,7 +333,6 @@ const updateProfile = async (req, res, next) => {
             }
         }
 
-        // Phone — basic format check if provided
         if (phone !== undefined && phone !== null && phone !== "") {
             const phoneRegex = /^[0-9+\-\s()]{7,15}$/;
             if (!phoneRegex.test(phone)) {
@@ -352,7 +343,7 @@ const updateProfile = async (req, res, next) => {
             }
         }
 
-        // ── Build update object — only include provided fields ───────
+        // ── Build update object ──────────────────────────────────────
         const updates = {};
         if (name !== undefined) updates.name = name.trim();
         if (email !== undefined) updates.email = email.toLowerCase().trim();
@@ -364,13 +355,12 @@ const updateProfile = async (req, res, next) => {
         if (phone !== undefined) updates.phone = phone?.trim() || null;
         if (skills !== undefined) updates.skills = skills.map((s) => s.trim());
 
-        // ── Apply update ─────────────────────────────────────────────
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             { $set: updates },
             { new: true, runValidators: true }
         ).select(
-            "name email enrollmentId department semester year cgpa phone skills role createdAt"
+            "name email enrollmentId department semester year cgpa phone skills createdAt"
         );
 
         if (!updatedUser) {
@@ -386,7 +376,6 @@ const updateProfile = async (req, res, next) => {
             data: updatedUser,
         });
     } catch (error) {
-        // Handle Mongoose duplicate key errors
         if (error.code === 11000) {
             const field = Object.keys(error.keyPattern)[0];
             return res.status(409).json({
@@ -398,10 +387,79 @@ const updateProfile = async (req, res, next) => {
     }
 };
 
+/* =========================
+   CHANGE PASSWORD
+   PUT /api/v1/users/me/password
+========================= */
+
+const changePassword = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { currentPassword, newPassword } = req.body;
+
+        // ── Required field checks ────────────────────────────────────
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({
+                success: false,
+                error: "Both currentPassword and newPassword are required",
+            });
+        }
+
+        // ── New password length ──────────────────────────────────────
+        if (typeof newPassword !== "string" || newPassword.length < 6) {
+            return res.status(400).json({
+                success: false,
+                error: "New password must be at least 6 characters",
+            });
+        }
+
+        // ── Fetch user with password (select: false requires explicit +password) ──
+        const user = await User.findById(userId).select("+password");
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: "User not found",
+            });
+        }
+
+        // ── Verify current password ──────────────────────────────────
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(401).json({
+                success: false,
+                error: "Current password is incorrect",
+            });
+        }
+
+        // ── New password cannot be same as current ───────────────────
+        const isSame = await bcrypt.compare(newPassword, user.password);
+        if (isSame) {
+            return res.status(400).json({
+                success: false,
+                error: "New password must be different from current password",
+            });
+        }
+
+        // ── Hash and save ────────────────────────────────────────────
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+
+        // ── Never return password in response ────────────────────────
+        return res.status(200).json({
+            success: true,
+            message: "Password updated successfully",
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     toggleSavedEvent,
     getSavedEvents,
     getMyRegistrations,
     getMyProfile,
     updateProfile,
+    changePassword,
 };

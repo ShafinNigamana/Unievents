@@ -5,7 +5,8 @@ import {
     ClipboardList, Heart, Star, ArrowRight,
     AlertCircle, CheckCircle2, Archive,
     GraduationCap, Edit2, Save, X, Plus,
-    Phone, BookOpen, Award, Layers
+    Phone, BookOpen, Award, Layers,
+    Lock, Eye, EyeOff, ShieldCheck
 } from "lucide-react";
 import Layout from "../../components/layout/Layout";
 import StarRating from "../../components/ui/StarRating";
@@ -139,7 +140,6 @@ function EditProfileForm({ user, onSave, onCancel }) {
         setError("");
         setSaving(true);
 
-        // Build payload — only send fields that have values
         const payload = {};
         if (form.name.trim()) payload.name = form.name.trim();
         if (form.email.trim()) payload.email = form.email.trim();
@@ -169,149 +169,87 @@ function EditProfileForm({ user, onSave, onCancel }) {
                 </div>
             )}
 
-            {/* Basic info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block mb-1.5">Full Name</label>
                     <div className="relative">
                         <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                        <input
-                            type="text"
-                            value={form.name}
-                            onChange={set("name")}
-                            placeholder="Your full name"
-                            className="input pl-10"
-                        />
+                        <input type="text" value={form.name} onChange={set("name")}
+                            placeholder="Your full name" className="input pl-10" />
                     </div>
                 </div>
-
                 <div>
                     <label className="block mb-1.5">Email Address</label>
                     <div className="relative">
                         <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                        <input
-                            type="email"
-                            value={form.email}
-                            onChange={set("email")}
-                            placeholder="your@email.com"
-                            className="input pl-10"
-                        />
+                        <input type="email" value={form.email} onChange={set("email")}
+                            placeholder="your@email.com" className="input pl-10" />
                     </div>
                 </div>
-
                 <div>
                     <label className="block mb-1.5">Enrollment ID</label>
                     <div className="relative">
                         <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                        <input
-                            type="text"
-                            value={form.enrollmentId}
-                            onChange={set("enrollmentId")}
-                            placeholder="e.g. 22CS0001"
-                            className="input pl-10"
-                        />
+                        <input type="text" value={form.enrollmentId} onChange={set("enrollmentId")}
+                            placeholder="e.g. 22CS0001" className="input pl-10" />
                     </div>
                 </div>
-
                 <div>
                     <label className="block mb-1.5">Phone Number</label>
                     <div className="relative">
                         <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                        <input
-                            type="text"
-                            value={form.phone}
-                            onChange={set("phone")}
-                            placeholder="e.g. 9876543210"
-                            className="input pl-10"
-                        />
+                        <input type="text" value={form.phone} onChange={set("phone")}
+                            placeholder="e.g. 9876543210" className="input pl-10" />
                     </div>
                 </div>
             </div>
 
-            {/* Academic info */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label className="block mb-1.5">Department</label>
                     <div className="relative">
                         <BookOpen className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                        <input
-                            type="text"
-                            value={form.department}
-                            onChange={set("department")}
-                            placeholder="e.g. Computer Science"
-                            className="input pl-10"
-                        />
+                        <input type="text" value={form.department} onChange={set("department")}
+                            placeholder="e.g. Computer Science" className="input pl-10" />
                     </div>
                 </div>
-
                 <div>
                     <label className="block mb-1.5">CGPA</label>
                     <div className="relative">
                         <Award className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                        <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            max="10"
-                            value={form.cgpa}
-                            onChange={set("cgpa")}
-                            placeholder="e.g. 8.5"
-                            className="input pl-10"
-                        />
+                        <input type="number" step="0.01" min="0" max="10" value={form.cgpa} onChange={set("cgpa")}
+                            placeholder="e.g. 8.5" className="input pl-10" />
                     </div>
                 </div>
-
                 <div>
                     <label className="block mb-1.5">Semester</label>
                     <div className="relative">
                         <Layers className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                        <input
-                            type="number"
-                            min="1"
-                            max="12"
-                            value={form.semester}
-                            onChange={set("semester")}
-                            placeholder="e.g. 4"
-                            className="input pl-10"
-                        />
+                        <input type="number" min="1" max="12" value={form.semester} onChange={set("semester")}
+                            placeholder="e.g. 4" className="input pl-10" />
                     </div>
                 </div>
-
                 <div>
                     <label className="block mb-1.5">Year</label>
                     <div className="relative">
                         <GraduationCap className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                        <input
-                            type="number"
-                            min="1"
-                            max="6"
-                            value={form.year}
-                            onChange={set("year")}
-                            placeholder="e.g. 2"
-                            className="input pl-10"
-                        />
+                        <input type="number" min="1" max="6" value={form.year} onChange={set("year")}
+                            placeholder="e.g. 2" className="input pl-10" />
                     </div>
                 </div>
             </div>
 
-            {/* Skills */}
             <div>
                 <label className="block mb-1.5">Skills (up to 15)</label>
                 <div className="space-y-2">
                     {form.skills.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                             {form.skills.map((skill) => (
-                                <span
-                                    key={skill}
-                                    className="inline-flex items-center gap-1.5 text-xs bg-brand-500/15 text-brand-300
-                             border border-brand-500/20 px-2.5 py-1 rounded-full"
-                                >
+                                <span key={skill}
+                                    className="inline-flex items-center gap-1.5 text-xs bg-brand-500/15 text-brand-300 border border-brand-500/20 px-2.5 py-1 rounded-full">
                                     {skill}
-                                    <button
-                                        type="button"
-                                        onClick={() => removeSkill(skill)}
-                                        className="text-brand-400 hover:text-white transition-colors"
-                                    >
+                                    <button type="button" onClick={() => removeSkill(skill)}
+                                        className="text-brand-400 hover:text-white transition-colors">
                                         <X className="w-3 h-3" />
                                     </button>
                                 </span>
@@ -320,20 +258,14 @@ function EditProfileForm({ user, onSave, onCancel }) {
                     )}
                     {form.skills.length < 15 && (
                         <div className="flex gap-2">
-                            <input
-                                type="text"
-                                placeholder="Add a skill (press Enter)"
+                            <input type="text" placeholder="Add a skill (press Enter)"
                                 value={skillInput}
                                 onChange={(e) => setSkillInput(e.target.value)}
                                 onKeyDown={handleSkillKeyDown}
-                                className="input flex-1 text-sm"
-                            />
-                            <button
-                                type="button"
-                                onClick={addSkill}
+                                className="input flex-1 text-sm" />
+                            <button type="button" onClick={addSkill}
                                 disabled={!skillInput.trim()}
-                                className="button-ghost px-3 disabled:opacity-40"
-                            >
+                                className="button-ghost px-3 disabled:opacity-40">
                                 <Plus className="w-4 h-4" />
                             </button>
                         </div>
@@ -341,26 +273,140 @@ function EditProfileForm({ user, onSave, onCancel }) {
                 </div>
             </div>
 
-            {/* Actions */}
             <div className="flex gap-3 justify-end pt-2 border-t border-white/8">
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="button-ghost py-2 px-4 text-sm"
-                >
-                    <X className="w-4 h-4" />
-                    Cancel
+                <button type="button" onClick={onCancel} className="button-ghost py-2 px-4 text-sm">
+                    <X className="w-4 h-4" /> Cancel
                 </button>
-                <button
-                    type="submit"
-                    disabled={saving}
-                    className="button-primary py-2 px-4 text-sm"
-                >
-                    {saving ? (
-                        <>Saving…</>
-                    ) : (
-                        <><Save className="w-4 h-4" /> Save Changes</>
-                    )}
+                <button type="submit" disabled={saving} className="button-primary py-2 px-4 text-sm">
+                    {saving ? <>Saving…</> : <><Save className="w-4 h-4" /> Save Changes</>}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+/* ── Change Password Form ────────────────────── */
+function ChangePasswordForm({ onSuccess, onCancel }) {
+    const [form, setForm] = useState({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+    });
+    const [showCurrent, setShowCurrent] = useState(false);
+    const [showNew, setShowNew] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [saving, setSaving] = useState(false);
+    const [error, setError] = useState("");
+
+    const set = (field) => (e) =>
+        setForm((p) => ({ ...p, [field]: e.target.value }));
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError("");
+
+        if (!form.currentPassword || !form.newPassword || !form.confirmPassword) {
+            setError("All fields are required.");
+            return;
+        }
+        if (form.newPassword.length < 6) {
+            setError("New password must be at least 6 characters.");
+            return;
+        }
+        if (form.newPassword !== form.confirmPassword) {
+            setError("New password and confirmation do not match.");
+            return;
+        }
+        if (form.newPassword === form.currentPassword) {
+            setError("New password must be different from your current password.");
+            return;
+        }
+
+        setSaving(true);
+        try {
+            await api.put("/users/me/password", {
+                currentPassword: form.currentPassword,
+                newPassword: form.newPassword,
+            });
+            onSuccess();
+        } catch (err) {
+            setError(err.response?.data?.error || "Failed to update password.");
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+                <div className="px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm animate-fade-in">
+                    {error}
+                </div>
+            )}
+
+            <div>
+                <label className="block mb-1.5">Current Password</label>
+                <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                    <input
+                        type={showCurrent ? "text" : "password"}
+                        value={form.currentPassword}
+                        onChange={set("currentPassword")}
+                        placeholder="Your current password"
+                        className="input pl-10 pr-10"
+                        autoComplete="current-password"
+                    />
+                    <button type="button" onClick={() => setShowCurrent((p) => !p)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+                        {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label className="block mb-1.5">New Password</label>
+                <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                    <input
+                        type={showNew ? "text" : "password"}
+                        value={form.newPassword}
+                        onChange={set("newPassword")}
+                        placeholder="Min. 6 characters"
+                        className="input pl-10 pr-10"
+                        autoComplete="new-password"
+                    />
+                    <button type="button" onClick={() => setShowNew((p) => !p)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+                        {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                </div>
+            </div>
+
+            <div>
+                <label className="block mb-1.5">Confirm New Password</label>
+                <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+                    <input
+                        type={showConfirm ? "text" : "password"}
+                        value={form.confirmPassword}
+                        onChange={set("confirmPassword")}
+                        placeholder="Repeat new password"
+                        className="input pl-10 pr-10"
+                        autoComplete="new-password"
+                    />
+                    <button type="button" onClick={() => setShowConfirm((p) => !p)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+                        {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                </div>
+            </div>
+
+            <div className="flex gap-3 justify-end pt-2 border-t border-white/8">
+                <button type="button" onClick={onCancel} className="button-ghost py-2 px-4 text-sm">
+                    <X className="w-4 h-4" /> Cancel
+                </button>
+                <button type="submit" disabled={saving} className="button-primary py-2 px-4 text-sm">
+                    {saving ? <>Updating…</> : <><ShieldCheck className="w-4 h-4" /> Update Password</>}
                 </button>
             </div>
         </form>
@@ -373,11 +419,18 @@ function EditProfileForm({ user, onSave, onCancel }) {
 export default function StudentProfile() {
     const navigate = useNavigate();
     const { user: authUser, login } = useAuth();
+
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+
+    // Edit profile state
     const [editing, setEditing] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
+
+    // Change password state
+    const [changingPassword, setChangingPassword] = useState(false);
+    const [passwordSuccess, setPasswordSuccess] = useState(false);
 
     const fetchProfile = useCallback(async () => {
         setLoading(true);
@@ -398,13 +451,12 @@ export default function StudentProfile() {
 
     // Called when EditProfileForm saves successfully
     const handleSave = (updatedUser) => {
-        // Update profile state with new user data
         setProfile((prev) => ({ ...prev, user: updatedUser }));
         setEditing(false);
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
 
-        // Update AuthContext so Navbar name reflects changes immediately
+        // Sync name/email into AuthContext so Navbar updates immediately
         if (authUser) {
             login(localStorage.getItem("token"), {
                 ...authUser,
@@ -412,6 +464,13 @@ export default function StudentProfile() {
                 email: updatedUser.email,
             });
         }
+    };
+
+    // Called when ChangePasswordForm saves successfully
+    const handlePasswordSuccess = () => {
+        setChangingPassword(false);
+        setPasswordSuccess(true);
+        setTimeout(() => setPasswordSuccess(false), 3000);
     };
 
     if (loading) {
@@ -456,11 +515,17 @@ export default function StudentProfile() {
         <Layout>
             <div className="space-y-8 animate-fade-in max-w-4xl mx-auto">
 
-                {/* ── Success banner ── */}
+                {/* ── Success banners ── */}
                 {saveSuccess && (
                     <div className="glass-card p-4 flex items-center gap-3 border-green-500/20 animate-fade-in">
                         <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
                         <p className="text-sm text-green-300 font-medium">Profile updated successfully.</p>
+                    </div>
+                )}
+                {passwordSuccess && (
+                    <div className="glass-card p-4 flex items-center gap-3 border-green-500/20 animate-fade-in">
+                        <ShieldCheck className="w-5 h-5 text-green-400 flex-shrink-0" />
+                        <p className="text-sm text-green-300 font-medium">Password updated successfully.</p>
                     </div>
                 )}
 
@@ -513,7 +578,7 @@ export default function StudentProfile() {
                                     </div>
                                 </div>
 
-                                {/* Academic details row */}
+                                {/* Academic details */}
                                 {(user.department || user.semester || user.year || user.cgpa) && (
                                     <div className="flex flex-wrap gap-3 mt-3">
                                         {user.department && (
@@ -543,10 +608,8 @@ export default function StudentProfile() {
                                 {user.skills?.length > 0 && (
                                     <div className="flex flex-wrap gap-2 mt-3">
                                         {user.skills.map((skill) => (
-                                            <span
-                                                key={skill}
-                                                className="text-xs px-2.5 py-0.5 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/20"
-                                            >
+                                            <span key={skill}
+                                                className="text-xs px-2.5 py-0.5 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/20">
                                                 {skill}
                                             </span>
                                         ))}
@@ -554,19 +617,18 @@ export default function StudentProfile() {
                                 )}
                             </div>
 
-                            {/* Edit button */}
-                            {!editing && (
+                            {/* Edit button — hidden when any form is open */}
+                            {!editing && !changingPassword && (
                                 <button
                                     onClick={() => setEditing(true)}
                                     className="button-ghost py-2 px-4 text-sm flex-shrink-0 self-start"
                                 >
-                                    <Edit2 className="w-4 h-4" />
-                                    Edit Profile
+                                    <Edit2 className="w-4 h-4" /> Edit Profile
                                 </button>
                             )}
                         </div>
 
-                        {/* Edit form — inline inside hero card */}
+                        {/* Edit Profile form — inline inside hero card */}
                         {editing && (
                             <div className="mt-8 pt-6 border-t border-white/10">
                                 <EditProfileForm
@@ -630,10 +692,8 @@ export default function StudentProfile() {
                                 />
                             ))}
                             {registeredEvents.length > 5 && (
-                                <button
-                                    onClick={() => navigate("/my-registrations")}
-                                    className="w-full text-xs text-slate-500 hover:text-brand-400 transition-colors pt-2"
-                                >
+                                <button onClick={() => navigate("/my-registrations")}
+                                    className="w-full text-xs text-slate-500 hover:text-brand-400 transition-colors pt-2">
                                     +{registeredEvents.length - 5} more registrations
                                 </button>
                             )}
@@ -670,10 +730,8 @@ export default function StudentProfile() {
                                 />
                             ))}
                             {savedEvents.length > 5 && (
-                                <button
-                                    onClick={() => navigate("/saved-events")}
-                                    className="w-full text-xs text-slate-500 hover:text-brand-400 transition-colors pt-2"
-                                >
+                                <button onClick={() => navigate("/saved-events")}
+                                    className="w-full text-xs text-slate-500 hover:text-brand-400 transition-colors pt-2">
                                     +{savedEvents.length - 5} more saved events
                                 </button>
                             )}
@@ -758,6 +816,46 @@ export default function StudentProfile() {
                                 </p>
                             )}
                         </div>
+                    )}
+                </section>
+
+                {/* ── Account Security ── */}
+                <section className="glass-card p-6">
+                    <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-2">
+                            <ShieldCheck className="w-5 h-5 text-slate-400" />
+                            <h2>Account Security</h2>
+                        </div>
+                        {!changingPassword && (
+                            <button
+                                onClick={() => { setChangingPassword(true); setEditing(false); }}
+                                className="button-ghost py-2 px-4 text-sm"
+                            >
+                                <Lock className="w-4 h-4" /> Change Password
+                            </button>
+                        )}
+                    </div>
+
+                    {!changingPassword ? (
+                        <div className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/8">
+                            <div className="p-2.5 rounded-lg bg-slate-700/50">
+                                <Lock className="w-4 h-4 text-slate-400" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-medium text-white">Password</p>
+                                <p className="text-xs text-slate-500 mt-0.5">
+                                    Last updated when you registered. Keep it secure.
+                                </p>
+                            </div>
+                            <div className="ml-auto">
+                                <span className="text-xs text-slate-600">••••••••</span>
+                            </div>
+                        </div>
+                    ) : (
+                        <ChangePasswordForm
+                            onSuccess={handlePasswordSuccess}
+                            onCancel={() => setChangingPassword(false)}
+                        />
                     )}
                 </section>
 
