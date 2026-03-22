@@ -5,10 +5,23 @@ const {
     toggleSavedEvent,
     getSavedEvents,
     getMyRegistrations,
+    getMyProfile,
 } = require("../controllers/userController");
 
 const { protect } = require("../middleware/authMiddleware");
 const { authorizeRoles } = require("../middleware/roleMiddleware");
+
+/* =========================
+   PROFILE ROUTE
+   Must be defined BEFORE /:param style routes
+========================= */
+
+router.get(
+    "/me/profile",
+    protect,
+    authorizeRoles("student"),
+    getMyProfile
+);
 
 /* =========================
    SAVED EVENTS ROUTES

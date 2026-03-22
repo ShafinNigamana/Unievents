@@ -13,6 +13,7 @@ import EventDetail from "../pages/events/EventDetail";
 import EventForm from "../pages/events/EventForm";
 import SavedEvents from "../pages/events/savedEvents";
 import MyRegistrations from "../pages/events/MyRegistrations";
+import StudentProfile from "../pages/student/StudentProfile";
 
 import ProtectedRoute from "../components/ProtectedRoute";
 
@@ -65,6 +66,16 @@ export default function AppRoutes() {
         element={
           <ProtectedRoute allowedRoles={["student"]}>
             <MyRegistrations />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* ── Student: Profile ── */}
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute allowedRoles={["student"]}>
+            <StudentProfile />
           </ProtectedRoute>
         }
       />

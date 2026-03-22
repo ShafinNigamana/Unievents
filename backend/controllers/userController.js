@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Event = require("../models/Event");
 const Registration = require("../models/Registration");
+const EventReview = require("../models/EventReview");
 
 /* =========================
    TOGGLE SAVED EVENT
@@ -83,7 +84,7 @@ const getSavedEvents = async (req, res, next) => {
 
         const user = await User.findById(userId).populate({
             path: "savedEvents",
-            match: { isDeleted: false }, // exclude soft-deleted events
+            match: { isDeleted: false },
             select:
                 "title description category eventDate endDate startTime endTime venue tags posterUrl status approvalStatus averageRating reviewCount interestedUsers interestedCount year createdBy",
         });
@@ -92,7 +93,6 @@ const getSavedEvents = async (req, res, next) => {
         const validEvents = (user.savedEvents || []).filter(Boolean);
 
         // Cleanup: remove stale IDs (soft-deleted events) from user's savedEvents array
-        // so they don't accumulate over time
         const validIds = validEvents.map((e) => e._id.toString());
         const rawUser = await User.findById(userId).select("savedEvents");
         const hasStale = rawUser.savedEvents.some(
@@ -114,7 +114,6 @@ const getSavedEvents = async (req, res, next) => {
         next(error);
     }
 };
-
 
 /* =========================
    GET MY REGISTRATIONS
@@ -147,8 +146,100 @@ const getMyRegistrations = async (req, res, next) => {
     }
 };
 
+/* =========================
+   GET MY PROFILE
+   GET /api/v1/users/me/profile
+========================= */
+
+const getMyProfile = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+
+        // ── 1. User basic info ──────────────────────────────────────
+        const user = await User.findById(userId).select(
+            "name email enrollmentId role createdAt"
+        );
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                error: "User not found",
+            });
+        }
+
+        // ── 2. Saved Events ─────────────────────────────────────────
+        // From User.savedEvents — exclude soft-deleted, include archived
+        const userWithSaved = await User.findById(userId).populate({
+            path: "savedEvents",
+            match: { isDeleted: false },
+            select:
+                "title category eventDate venue posterUrl status averageRating reviewCount year",
+        });
+        const savedEvents = (userWithSaved.savedEvents || []).filter(Boolean);
+
+        // ── 3. Registered Events ────────────────────────────────────
+        // Active registrations only — exclude soft-deleted, include archived
+        const registrations = await Registration.find({
+            userId,
+            status: "registered",
+        }).populate({
+            path: "eventId",
+            match: { isDeleted: false },
+            select:
+                "title category eventDate venue posterUrl status capacity registeredCount year",
+        });
+        const registeredEvents = registrations
+            .filter((r) => r.eventId !== null)
+            .map((r) => ({
+                registration: {
+                    _id: r._id,
+                    status: r.status,
+                    registeredAt: r.registeredAt,
+                },
+                event: r.eventId,
+            }));
+
+        // ── 4. Interested Events ────────────────────────────────────
+        // Events where this user is in interestedUsers array
+        // Only published + archived, exclude soft-deleted
+        const interestedEvents = await Event.find({
+            interestedUsers: userId,
+            isDeleted: false,
+            status: { $in: ["published", "archived"] },
+        }).select(
+            "title category eventDate venue posterUrl status interestedCount year"
+        );
+
+        // ── 5. My Reviews ───────────────────────────────────────────
+        const reviews = await EventReview.find({ userId })
+            .populate({
+                path: "eventId",
+                match: { isDeleted: false },
+                select: "title category eventDate posterUrl status year",
+            })
+            .select("rating comment createdAt eventId")
+            .sort({ createdAt: -1 });
+        const myReviews = reviews.filter((r) => r.eventId !== null);
+
+        // ── Response ────────────────────────────────────────────────
+        return res.status(200).json({
+            success: true,
+            data: {
+                user,
+                savedEvents,
+                registeredEvents,
+                interestedEvents,
+                myReviews,
+            },
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
 module.exports = {
     toggleSavedEvent,
     getSavedEvents,
     getMyRegistrations,
+    getMyProfile,
 };

@@ -2,7 +2,7 @@ import { NavLink, useNavigate, Link } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Plus, LogOut,
   Archive, ChevronDown, Menu, X, Sun, Moon,
-  Bookmark, ClipboardList
+  Bookmark, ClipboardList, UserCircle
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
@@ -36,6 +36,7 @@ function NavLinks({ role, onClose }) {
       <NavItem to="/events/archive" icon={Archive} label="Archive" {...p} />
       <NavItem to="/saved-events" icon={Bookmark} label="Saved" {...p} />
       <NavItem to="/my-registrations" icon={ClipboardList} label="Registrations" {...p} />
+      <NavItem to="/profile" icon={UserCircle} label="Profile" {...p} />
     </>
   );
   if (role === "organizer") return (
@@ -163,6 +164,7 @@ export default function Navbar() {
                     className="absolute right-0 mt-2 w-60 z-50 rounded-2xl shadow-2xl border border-white/10 overflow-hidden animate-fade-in"
                     style={{ background: "#14142b" }}
                   >
+                    {/* User info */}
                     <div className="px-4 py-3 bg-white/5 border-b border-white/8">
                       <div className="flex items-center gap-3">
                         <Avatar name={user.name} />
@@ -177,7 +179,21 @@ export default function Navbar() {
                         </div>
                       </div>
                     </div>
-                    <div className="p-1.5">
+
+                    {/* Dropdown actions */}
+                    <div className="p-1.5 space-y-0.5">
+                      {/* Profile link — students only */}
+                      {user.role === "student" && (
+                        <button
+                          onClick={() => { navigate("/profile"); setDropOpen(false); }}
+                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-300 hover:bg-white/8 rounded-xl transition-colors"
+                        >
+                          <UserCircle className="w-4 h-4 text-brand-400" />
+                          <span>My Profile</span>
+                        </button>
+                      )}
+
+                      {/* Sign out */}
                       <button
                         onClick={handleLogout}
                         className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
