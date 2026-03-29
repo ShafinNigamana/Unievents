@@ -3,6 +3,9 @@ import { Routes, Route } from "react-router-dom";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
 import Landing from "../pages/Landing";
+import FAQ from "../pages/FAQ";
+import Contact from "../pages/Contact";
+import About from "../pages/About";
 
 import StudentDashboard from "../pages/dashboard/StudentDashboard";
 import OrganizerDashboard from "../pages/dashboard/OrganizerDashboard";
@@ -22,6 +25,9 @@ export default function AppRoutes() {
     <Routes>
       {/* Public landing page */}
       <Route path="/" element={<Landing />} />
+      <Route path="/faq" element={<FAQ />} />
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/about" element={<About />} />
 
       {/* Auth */}
       <Route path="/login" element={<Login />} />

@@ -1,8 +1,9 @@
 import Navbar from "./Navbar";
+import Footer from "./Footer";
 
 export default function Layout({ children }) {
   return (
-    <div className="min-h-screen bg-surface-900 transition-colors">
+    <div className="min-h-screen bg-surface-900 transition-colors flex flex-col">
       {/* Ambient background blobs */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
         <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-brand-700/10 blur-3xl" />
@@ -12,9 +13,11 @@ export default function Layout({ children }) {
 
       <Navbar />
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1 border-b border-transparent">
         {children}
       </main>
+
+      <Footer />
     </div>
   );
 }

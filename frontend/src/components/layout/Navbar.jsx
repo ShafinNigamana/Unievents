@@ -1,7 +1,7 @@
 import { NavLink, useNavigate, Link } from "react-router-dom";
 import {
   LayoutDashboard, Calendar, Plus, LogOut,
-  Archive, ChevronDown, Menu, X, Sun, Moon,
+  Archive, ChevronDown, ChevronRight, Menu, X, Sun, Moon,
   Bookmark, ClipboardList, UserCircle
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -15,9 +15,9 @@ function NavItem({ to, icon: Icon, label, end = false, onClick }) {
       end={end}
       onClick={onClick}
       className={({ isActive }) =>
-        `flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg transition-all duration-200 ${isActive
-          ? "bg-brand-500/20 text-brand-300"
-          : "text-slate-400 hover:text-white hover:bg-white/8"
+        `flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-xl transition-all duration-200 ${isActive
+          ? "bg-brand-500/10 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300 shadow-sm dark:shadow-none"
+          : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
         }`
       }
     >
@@ -36,7 +36,6 @@ function NavLinks({ role, onClose }) {
       <NavItem to="/events/archive" icon={Archive} label="Archive" {...p} />
       <NavItem to="/saved-events" icon={Bookmark} label="Saved" {...p} />
       <NavItem to="/my-registrations" icon={ClipboardList} label="Registrations" {...p} />
-      <NavItem to="/profile" icon={UserCircle} label="Profile" {...p} />
     </>
   );
   if (role === "organizer") return (
@@ -127,11 +126,18 @@ export default function Navbar() {
           {/* Right side */}
           <div className="flex items-center gap-2">
 
+            {/* Public Links (Desktop) */}
+            <div className="hidden lg:flex items-center gap-5 mr-3 border-r border-slate-200 dark:border-white/10 pr-5 text-sm font-medium text-slate-500 dark:text-slate-400">
+              <Link to="/about" className="hover:text-slate-900 dark:hover:text-white transition-colors">About</Link>
+              <Link to="/faq" className="hover:text-slate-900 dark:hover:text-white transition-colors">FAQ</Link>
+              <Link to="/contact" className="hover:text-slate-900 dark:hover:text-white transition-colors">Contact</Link>
+            </div>
+
             {/* Theme toggle */}
             <button
               onClick={toggleTheme}
               aria-label="Toggle theme"
-              className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-all duration-200"
+              className="p-2 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10 transition-all duration-200"
             >
               {theme === "dark"
                 ? <Sun className="w-4 h-4" />
@@ -143,15 +149,16 @@ export default function Navbar() {
               <div className="hidden md:block relative" ref={dropRef}>
                 <button
                   onClick={() => setDropOpen(!dropOpen)}
-                  className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all"
+                  className={`flex items-center gap-2.5 p-1.5 pr-3 rounded-full border transition-all duration-200 focus:outline-none ${
+                    dropOpen 
+                      ? "bg-slate-100 border-slate-300 shadow-inner dark:bg-white/10 dark:border-white/20"
+                      : "bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300 dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10 dark:hover:border-white/20 shadow-sm dark:shadow-none"
+                  }`}
                 >
                   <Avatar name={user.name} />
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-white max-w-[90px] truncate">
+                  <div className="hidden lg:flex items-center gap-2">
+                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-[120px] truncate leading-none">
                       {user.name}
-                    </span>
-                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${ROLE_COLOR[user.role] ?? ""}`}>
-                      {user.role}
                     </span>
                   </div>
                   <ChevronDown
@@ -161,21 +168,20 @@ export default function Navbar() {
 
                 {dropOpen && (
                   <div
-                    className="absolute right-0 mt-2 w-60 z-50 rounded-2xl shadow-2xl border border-white/10 overflow-hidden animate-fade-in"
-                    style={{ background: "#14142b" }}
+                    className="absolute right-0 mt-2 w-64 z-50 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden animate-fade-in bg-white dark:bg-[#14142b]"
                   >
                     {/* User info */}
-                    <div className="px-4 py-3 bg-white/5 border-b border-white/8">
+                    <div className="px-4 py-3 bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/8">
                       <div className="flex items-center gap-3">
                         <Avatar name={user.name} />
                         <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-semibold text-white truncate">{user.name}</p>
+                          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{user.name}</p>
                             <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${ROLE_COLOR[user.role] ?? ""}`}>
                               {user.role}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400 truncate mt-0.5">{user.email}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
                         </div>
                       </div>
                     </div>
@@ -186,17 +192,20 @@ export default function Navbar() {
                       {user.role === "student" && (
                         <button
                           onClick={() => { navigate("/profile"); setDropOpen(false); }}
-                          className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-300 hover:bg-white/8 rounded-xl transition-colors"
+                          className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/8 rounded-xl transition-colors group"
                         >
-                          <UserCircle className="w-4 h-4 text-brand-400" />
-                          <span>My Profile</span>
+                          <div className="flex items-center gap-2.5">
+                            <UserCircle className="w-4 h-4 text-brand-500 dark:text-brand-400" />
+                            <span>My Profile</span>
+                          </div>
+                          <ChevronRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-brand-500" />
                         </button>
                       )}
 
                       {/* Sign out */}
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-400 hover:bg-red-500/10 rounded-xl transition-colors"
+                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
                       >
                         <LogOut className="w-4 h-4" />
                         <span>Sign out</span>
@@ -234,6 +243,11 @@ export default function Navbar() {
         <div className="md:hidden border-t border-white/8 bg-surface-900/98 backdrop-blur-xl">
           <div className="px-4 pt-3 pb-2 space-y-1">
             <NavLinks role={user.role} onClose={closeMobile} />
+          </div>
+          <div className="px-5 py-3 border-t border-white/8 flex items-center justify-between text-sm">
+            <Link to="/about" onClick={closeMobile} className="text-slate-400 hover:text-white transition-colors">About</Link>
+            <Link to="/faq" onClick={closeMobile} className="text-slate-400 hover:text-white transition-colors">FAQ</Link>
+            <Link to="/contact" onClick={closeMobile} className="text-slate-400 hover:text-white transition-colors">Contact</Link>
           </div>
           <div className="px-4 py-3 border-t border-white/8 flex items-center justify-between">
             <div className="flex items-center gap-3">

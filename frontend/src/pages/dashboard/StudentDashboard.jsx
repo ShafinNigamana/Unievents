@@ -18,8 +18,8 @@ function StatCard({ icon: Icon, label, value, color, bg }) {
         <Icon className="w-5 h-5 text-white" />
       </div>
       <div>
-        <p className="text-2xl font-bold text-white">{value ?? "—"}</p>
-        <p className="text-xs text-slate-400 mt-0.5">{label}</p>
+        <p className="text-2xl font-bold text-slate-900 dark:text-white">{value ?? "—"}</p>
+        <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{label}</p>
       </div>
     </div>
   );
@@ -100,20 +100,19 @@ export default function StudentDashboard() {
 
         {/* Hero banner */}
         <div
-          className="relative overflow-hidden rounded-2xl border border-white/10 p-8"
-          style={{ background: "linear-gradient(135deg, #1a0a3e 0%, #14142b 60%, #0d1a3a 100%)" }}
+          className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 p-8 bg-gradient-to-br from-brand-50 via-white to-purple-50 dark:from-[#1a0a3e] dark:via-[#14142b] dark:to-[#0d1a3a]"
         >
           <div className="absolute -top-10 -right-10 w-64 h-64 rounded-full bg-brand-500/10 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full bg-purple-600/10 pointer-events-none" />
           <div className="relative z-10">
             <div className="flex items-center gap-2 mb-2">
-              <Sparkles className="w-5 h-5" style={{ color: "#a78bfa" }} />
-              <span className="text-sm font-medium" style={{ color: "#d8b4fe" }}>Student Portal</span>
+              <Sparkles className="w-5 h-5 text-brand-600 dark:text-[#a78bfa]" />
+              <span className="text-sm font-medium text-brand-700 dark:text-[#d8b4fe]">Student Portal</span>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-bold mb-1" style={{ color: "#ffffff" }}>
+            <h1 className="text-2xl sm:text-3xl font-bold mb-1 text-slate-900 dark:text-white">
               {greeting()}, {user?.name?.split(" ")[0] ?? "there"} 👋
             </h1>
-            <p className="text-sm sm:text-base" style={{ color: "#94a3b8" }}>
+            <p className="text-sm sm:text-base text-slate-600 dark:text-[#94a3b8]">
               Stay updated with campus events and activities.
             </p>
           </div>

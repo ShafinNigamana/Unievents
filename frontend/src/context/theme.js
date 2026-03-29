@@ -1,5 +1,5 @@
 export function getInitialTheme() {
-  const savedTheme = localStorage.getItem("theme");
+  const savedTheme = localStorage.getItem("explicit-theme");
   if (savedTheme) return savedTheme;
 
   return window.matchMedia("(prefers-color-scheme: dark)").matches
@@ -7,7 +7,7 @@ export function getInitialTheme() {
     : "light";
 }
 
-export function applyTheme(theme) {
+export function applyTheme(theme, save = false) {
   const root = document.documentElement;
 
   if (theme === "dark") {
@@ -16,5 +16,7 @@ export function applyTheme(theme) {
     root.classList.remove("dark");
   }
 
-  localStorage.setItem("theme", theme);
+  if (save) {
+    localStorage.setItem("explicit-theme", theme);
+  }
 }

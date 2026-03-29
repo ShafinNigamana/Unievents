@@ -531,8 +531,7 @@ export default function StudentProfile() {
 
                 {/* ── Profile Hero Card ── */}
                 <div
-                    className="relative overflow-hidden rounded-2xl border border-white/10 p-8"
-                    style={{ background: "linear-gradient(135deg, #1a0a3e 0%, #14142b 60%, #0d1a3a 100%)" }}
+                    className="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-white/10 p-8 bg-gradient-to-br from-brand-50 via-white to-purple-50 dark:from-[#1a0a3e] dark:via-[#14142b] dark:to-[#0d1a3a]"
                 >
                     <div className="absolute -top-10 -right-10 w-56 h-56 rounded-full bg-brand-500/10 pointer-events-none" />
                     <div className="absolute bottom-0 left-0 w-40 h-40 rounded-full bg-purple-600/10 pointer-events-none" />
@@ -556,24 +555,24 @@ export default function StudentProfile() {
                                 </div>
 
                                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-5 mt-2 flex-wrap">
-                                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                                        <Mail className="w-3.5 h-3.5 text-brand-400 flex-shrink-0" />
+                                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                                        <Mail className="w-3.5 h-3.5 text-brand-500 dark:text-brand-400 flex-shrink-0" />
                                         {user.email}
                                     </div>
                                     {user.enrollmentId && (
-                                        <div className="flex items-center gap-2 text-sm text-slate-400">
-                                            <Hash className="w-3.5 h-3.5 text-brand-400 flex-shrink-0" />
+                                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                                            <Hash className="w-3.5 h-3.5 text-brand-500 dark:text-brand-400 flex-shrink-0" />
                                             {user.enrollmentId}
                                         </div>
                                     )}
                                     {user.phone && (
-                                        <div className="flex items-center gap-2 text-sm text-slate-400">
-                                            <Phone className="w-3.5 h-3.5 text-brand-400 flex-shrink-0" />
+                                        <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                                            <Phone className="w-3.5 h-3.5 text-brand-500 dark:text-brand-400 flex-shrink-0" />
                                             {user.phone}
                                         </div>
                                     )}
-                                    <div className="flex items-center gap-2 text-sm text-slate-400">
-                                        <GraduationCap className="w-3.5 h-3.5 text-brand-400 flex-shrink-0" />
+                                    <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                                        <GraduationCap className="w-3.5 h-3.5 text-brand-500 dark:text-brand-400 flex-shrink-0" />
                                         Member since {memberSince}
                                     </div>
                                 </div>
@@ -582,17 +581,17 @@ export default function StudentProfile() {
                                 {(user.department || user.semester || user.year || user.cgpa) && (
                                     <div className="flex flex-wrap gap-3 mt-3">
                                         {user.department && (
-                                            <span className="text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300">
+                                            <span className="text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300">
                                                 {user.department}
                                             </span>
                                         )}
                                         {user.year && (
-                                            <span className="text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300">
+                                            <span className="text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300">
                                                 Year {user.year}
                                             </span>
                                         )}
                                         {user.semester && (
-                                            <span className="text-xs px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-slate-300">
+                                            <span className="text-xs px-2.5 py-1 rounded-full bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-600 dark:text-slate-300">
                                                 Sem {user.semester}
                                             </span>
                                         )}
@@ -609,7 +608,7 @@ export default function StudentProfile() {
                                     <div className="flex flex-wrap gap-2 mt-3">
                                         {user.skills.map((skill) => (
                                             <span key={skill}
-                                                className="text-xs px-2.5 py-0.5 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/20">
+                                                className="text-xs px-2.5 py-0.5 rounded-full bg-brand-500/15 text-brand-600 dark:text-brand-300 border border-brand-500/20">
                                                 {skill}
                                             </span>
                                         ))}

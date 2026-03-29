@@ -8,7 +8,7 @@ export function ThemeProvider({ children }) {
 
     const toggleTheme = () => {
         const next = theme === "dark" ? "light" : "dark";
-        applyTheme(next);
+        applyTheme(next, true);   // <--- Passed true to save choice
         setTheme(next);
     };
 

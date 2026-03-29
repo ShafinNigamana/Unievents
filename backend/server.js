@@ -15,6 +15,9 @@ const authRoutes = require("./routes/authRoutes");
 const uploadRoutes = require("./routes/uploadRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const userRoutes = require("./routes/userRoutes");
+const { publicRouter: publicFaqRoutes, adminRouter: adminFaqRoutes } = require("./routes/faqRoutes");
+const { publicRouter: publicContactRoutes, adminRouter: adminContactRoutes } = require("./routes/contactRoutes");
+const publicRoutes = require("./routes/publicRoutes");
 
 const errorHandler = require("./middleware/errorHandler");
 
@@ -88,6 +91,11 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/uploads", uploadRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/public/faqs", publicFaqRoutes);
+app.use("/api/v1/admin/faqs", adminFaqRoutes);
+app.use("/api/v1/public/contact", publicContactRoutes);
+app.use("/api/v1/admin/contact-messages", adminContactRoutes);
+app.use("/api/v1/public", publicRoutes);
 
 /* =========================
    GLOBAL ERROR HANDLER
