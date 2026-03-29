@@ -14,7 +14,7 @@ import AdminDashboard from "../pages/dashboard/AdminDashboard";
 import Events from "../pages/events/Events";
 import EventDetail from "../pages/events/EventDetail";
 import EventForm from "../pages/events/EventForm";
-import SavedEvents from "../pages/events/savedEvents";
+import SavedEvents from "../pages/events/SavedEvents";
 import MyRegistrations from "../pages/events/MyRegistrations";
 import StudentProfile from "../pages/student/StudentProfile";
 
