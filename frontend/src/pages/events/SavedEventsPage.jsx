@@ -6,7 +6,7 @@ import EventCard from "../../components/ui/EventCard";
 import { SkeletonGrid } from "../../components/ui/Spinner";
 import api from "../../services/api";
 
-export default function SavedEvents() {
+export default function SavedEventsPage() {
     const navigate = useNavigate();
 
     const [events, setEvents] = useState([]);
