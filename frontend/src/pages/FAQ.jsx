@@ -34,10 +34,10 @@ const fallbackColor = "bg-white/10 text-slate-300 border-white/15";
 function FAQItem({ faq, isOpen, onToggle }) {
   return (
     <div
-      className={`group border border-white/8 rounded-xl transition-all duration-300 ${
+      className={`group border rounded-xl transition-all duration-300 ${
         isOpen
-          ? "bg-white/5 border-brand-500/20 shadow-glow-sm"
-          : "hover:border-white/15 hover:bg-white/[0.02]"
+          ? "bg-slate-50 dark:bg-white/5 border-brand-200 dark:border-brand-500/20 shadow-sm dark:shadow-glow-sm"
+          : "border-slate-200 dark:border-white/8 hover:border-slate-300 dark:hover:border-white/15 hover:bg-slate-50/50 dark:hover:bg-white/[0.02]"
       }`}
     >
       <button
@@ -45,14 +45,14 @@ function FAQItem({ faq, isOpen, onToggle }) {
         className="w-full flex items-center justify-between gap-4 px-5 py-4 sm:px-6 sm:py-5 text-left cursor-pointer"
         aria-expanded={isOpen}
       >
-        <span className="text-sm sm:text-base font-medium text-white leading-snug pr-2">
+        <span className="text-sm sm:text-base font-medium text-slate-900 dark:text-white leading-snug pr-2">
           {faq.question}
         </span>
         <span
           className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${
             isOpen
-              ? "bg-brand-500/20 text-brand-400 rotate-180"
-              : "bg-white/5 text-slate-500 group-hover:bg-white/10 group-hover:text-slate-300"
+              ? "bg-brand-50 dark:bg-brand-500/20 text-brand-500 dark:text-brand-400 rotate-180"
+              : "bg-slate-100 dark:bg-white/5 text-slate-400 dark:text-slate-500 group-hover:bg-slate-200 dark:group-hover:bg-white/10 group-hover:text-slate-600 dark:group-hover:text-slate-300"
           }`}
         >
           <ChevronDown className="w-4 h-4" />
@@ -65,8 +65,8 @@ function FAQItem({ faq, isOpen, onToggle }) {
         }`}
       >
         <div className="px-5 pb-5 sm:px-6 sm:pb-6 pt-0">
-          <div className="border-t border-white/8 pt-4">
-            <p className="text-sm text-slate-400 leading-relaxed">
+          <div className="border-t border-slate-100 dark:border-white/8 pt-4">
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
               {faq.answer}
             </p>
           </div>
@@ -83,12 +83,12 @@ function FAQSkeleton() {
       {Array.from({ length: 5 }).map((_, i) => (
         <div
           key={i}
-          className="border border-white/8 rounded-xl px-6 py-5 flex justify-between items-center"
+          className="border border-slate-200 dark:border-white/8 rounded-xl px-6 py-5 flex justify-between items-center"
         >
           <div className="space-y-2 flex-1">
-            <div className="h-4 bg-white/10 rounded-lg w-3/4" />
+            <div className="h-4 bg-slate-200 dark:bg-white/10 rounded-lg w-3/4" />
           </div>
-          <div className="w-8 h-8 rounded-full bg-white/5" />
+          <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-white/5" />
         </div>
       ))}
     </div>
@@ -103,7 +103,7 @@ function CategoryPill({ label, active, onClick }) {
       className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium transition-all duration-200 cursor-pointer ${
         active
           ? "bg-brand-gradient text-white shadow-glow-sm"
-          : "border border-white/10 bg-white/5 text-slate-400 hover:bg-white/10 hover:text-slate-200 hover:border-white/20"
+          : "border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-700 dark:hover:text-slate-200 hover:border-slate-300 dark:hover:border-white/20"
       }`}
     >
       {label}
@@ -162,7 +162,7 @@ export default function FAQ() {
   const toggleFAQ = (id) => setOpenId((prev) => (prev === id ? null : id));
 
   return (
-    <div className="min-h-screen bg-surface-900 text-slate-100">
+    <div className="min-h-screen bg-surface-900 text-slate-900 dark:text-slate-100">
       <Navbar />
 
       {/* ── Hero ── */}
@@ -178,12 +178,12 @@ export default function FAQ() {
             FAQs
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white leading-tight mb-4">
             Frequently Asked{" "}
             <span className="gradient-text">Questions</span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-400 leading-relaxed max-w-xl mx-auto mb-8">
+          <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mx-auto mb-8">
             Everything you need to know about UniEvents. Can't find an answer?{" "}
             <Link
               to="/contact"
@@ -230,9 +230,9 @@ export default function FAQ() {
 
           {/* Error */}
           {error && (
-            <div className="glass-card p-8 text-center">
+            <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-8 text-center">
               <MessageCircle className="w-12 h-12 text-red-400/60 mx-auto mb-4" />
-              <p className="text-slate-300 font-medium mb-1">
+              <p className="text-slate-700 dark:text-slate-300 font-medium mb-1">
                 Oops, something went wrong
               </p>
               <p className="text-sm text-slate-500">{error}</p>
@@ -241,9 +241,9 @@ export default function FAQ() {
 
           {/* Empty */}
           {!loading && !error && faqs.length === 0 && (
-            <div className="glass-card p-12 text-center">
+            <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-12 text-center">
               <HelpCircle className="w-14 h-14 text-brand-500/30 mx-auto mb-4" />
-              <p className="text-slate-300 font-medium text-lg mb-2">
+              <p className="text-slate-700 dark:text-slate-300 font-medium text-lg mb-2">
                 No FAQs available
               </p>
               <p className="text-sm text-slate-500 max-w-sm mx-auto">
@@ -258,9 +258,9 @@ export default function FAQ() {
             !error &&
             faqs.length > 0 &&
             filtered.length === 0 && (
-              <div className="glass-card p-10 text-center">
+              <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-10 text-center">
                 <Search className="w-10 h-10 text-slate-500/40 mx-auto mb-3" />
-                <p className="text-slate-300 font-medium mb-1">
+                <p className="text-slate-700 dark:text-slate-300 font-medium mb-1">
                   No matching FAQs
                 </p>
                 <p className="text-sm text-slate-500">

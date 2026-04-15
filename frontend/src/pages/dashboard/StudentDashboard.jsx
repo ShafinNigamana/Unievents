@@ -13,13 +13,13 @@ import api from "../../services/api";
 
 function StatCard({ icon: Icon, label, value, color, bg }) {
   return (
-    <div className={`glass-card p-5 flex items-center gap-4 border ${bg}`}>
+    <div className={`bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-5 flex items-center gap-4 ${bg}`}>
       <div className={`p-3 rounded-xl ${color}`}>
         <Icon className="w-5 h-5 text-white" />
       </div>
       <div>
         <p className="text-2xl font-bold text-slate-900 dark:text-white">{value ?? "—"}</p>
-        <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">{label}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{label}</p>
       </div>
     </div>
   );
@@ -166,9 +166,9 @@ export default function StudentDashboard() {
               <p className="text-red-400">{error}</p>
             </div>
           ) : upcoming.length === 0 ? (
-            <div className="glass-card p-12 text-center space-y-2">
-              <Calendar className="w-10 h-10 text-slate-600 mx-auto" />
-              <p className="text-slate-400">No upcoming events right now.</p>
+            <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-12 text-center space-y-2">
+              <Calendar className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto" />
+              <p className="text-slate-500 dark:text-slate-400">No upcoming events right now.</p>
               <button
                 onClick={() => navigate("/events/archive")}
                 className="button-ghost text-sm mt-2"
@@ -195,8 +195,8 @@ export default function StudentDashboard() {
           <section>
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-400" />
-                <h2 className="text-green-300">My Registrations</h2>
+                <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400" />
+                <h2 className="text-green-700 dark:text-green-300">My Registrations</h2>
               </div>
               <button
                 onClick={() => navigate("/my-registrations")}
@@ -214,7 +214,7 @@ export default function StudentDashboard() {
                   <div
                     key={reg._id}
                     onClick={() => navigate(`/events/${event._id}`)}
-                    className="glass-card p-4 cursor-pointer hover:border-green-500/30 hover:shadow-glow-sm transition-all duration-200 group"
+                    className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-4 cursor-pointer hover:border-green-500/30 hover:shadow-lg dark:hover:shadow-glow-sm transition-all duration-300 group"
                   >
                     {/* Poster thumbnail */}
                     <div className="w-full h-28 rounded-xl overflow-hidden mb-3 bg-gradient-to-br from-green-600/20 to-brand-600/20 flex-shrink-0">
@@ -231,11 +231,11 @@ export default function StudentDashboard() {
                       )}
                     </div>
 
-                    <p className="text-sm font-semibold text-white group-hover:text-green-300 transition-colors line-clamp-2 leading-snug mb-2">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-300 transition-colors line-clamp-2 leading-snug mb-2">
                       {event.title}
                     </p>
 
-                    <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400">
                       <Calendar className="w-3.5 h-3.5 text-green-400 flex-shrink-0" />
                       <span>
                         {event.eventDate
@@ -292,7 +292,7 @@ export default function StudentDashboard() {
             <div className="flex items-center justify-between mb-5">
               <div className="flex items-center gap-2">
                 <Archive className="w-5 h-5 text-blue-400" />
-                <h2 className="text-blue-300">Recently Archived</h2>
+                <h2 className="text-blue-700 dark:text-blue-300">Recently Archived</h2>
               </div>
               <button
                 onClick={() => navigate("/events/archive")}

@@ -217,7 +217,7 @@ export default function EventForm({ editMode = false }) {
         <div className="mb-8">
           <button
             onClick={() => navigate("/dashboard/organizer")}
-            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors mb-4"
+            className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to dashboard
@@ -233,7 +233,7 @@ export default function EventForm({ editMode = false }) {
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="glass-card p-8 space-y-6">
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-8 space-y-6">
 
           {/* Alerts */}
           {error && (
@@ -408,9 +408,9 @@ export default function EventForm({ editMode = false }) {
                   }}
                   className={`inline-flex items-center gap-1.5 px-3 py-2.5 rounded-lg text-xs font-medium
                              border transition-all whitespace-nowrap ${
-                               venueTBD
-                                 ? "bg-amber-500/15 text-amber-300 border-amber-500/30"
-                                 : "bg-white/5 text-slate-400 border-white/10 hover:border-white/20"
+                                 venueTBD
+                                   ? "bg-amber-500/15 text-amber-600 dark:text-amber-300 border-amber-500/30"
+                                   : "bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400 border-slate-200 dark:border-white/10 hover:border-slate-300 dark:hover:border-white/20"
                              }`}
                 >
                   <MapPinOff className="w-3.5 h-3.5" />
@@ -435,8 +435,8 @@ export default function EventForm({ editMode = false }) {
                   {form.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="inline-flex items-center gap-1.5 text-xs bg-brand-500/15 text-brand-300
-                                 border border-brand-500/20 px-2.5 py-1 rounded-full"
+                      className="inline-flex items-center gap-1.5 text-xs bg-brand-50 dark:bg-brand-500/15 text-brand-600 dark:text-brand-300
+                                 border border-brand-200 dark:border-brand-500/20 px-2.5 py-1 rounded-full"
                     >
                       #{tag}
                       <button
@@ -485,7 +485,7 @@ export default function EventForm({ editMode = false }) {
                 <img
                   src={posterPreview}
                   alt="Poster preview"
-                  className="w-full max-h-64 object-cover rounded-xl border border-white/10"
+                  className="w-full max-h-64 object-cover rounded-xl border border-slate-200 dark:border-white/10"
                 />
                 {posterUploading && (
                   <div className="absolute inset-0 bg-black/60 rounded-xl flex items-center justify-center">
@@ -507,14 +507,14 @@ export default function EventForm({ editMode = false }) {
             ) : (
               <label
                 className="flex flex-col items-center justify-center gap-3 p-8 rounded-xl
-                           border-2 border-dashed border-white/15 hover:border-brand-500/40
-                           bg-white/3 hover:bg-brand-500/5 cursor-pointer transition-all"
+                           border-2 border-dashed border-slate-300 dark:border-white/15 hover:border-brand-500/40
+                           bg-slate-50 dark:bg-white/3 hover:bg-brand-50 dark:hover:bg-brand-500/5 cursor-pointer transition-all"
               >
                 <div className="p-3 rounded-xl bg-brand-500/10">
                   <ImagePlus className="w-6 h-6 text-brand-400" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm text-slate-300 font-medium">Click to upload poster</p>
+                  <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">Click to upload poster</p>
                   <p className="text-xs text-slate-500 mt-0.5">or drag and drop</p>
                 </div>
                 <input

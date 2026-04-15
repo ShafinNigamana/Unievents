@@ -114,14 +114,14 @@ export default function Events({ archive = false }) {
 
           {/* Count badge */}
           {!loading && (
-            <span className="self-start sm:self-auto text-xs font-medium px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-400 whitespace-nowrap">
+            <span className="self-start sm:self-auto text-xs font-medium px-3 py-1.5 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 whitespace-nowrap">
               {events.length} {events.length === 1 ? "event" : "events"}
             </span>
           )}
         </div>
 
         {/* ── Filters bar ── */}
-        <div className="glass-card p-3 flex flex-col sm:flex-row gap-2.5">
+        <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-3 flex flex-col sm:flex-row gap-2.5">
           {/* Search */}
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
@@ -175,7 +175,7 @@ export default function Events({ archive = false }) {
           {hasFilters && (
             <button
               onClick={clearFilters}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm text-slate-400 hover:text-white hover:bg-white/10 border border-white/10 transition-all flex-shrink-0"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 transition-all flex-shrink-0"
             >
               <X className="w-3.5 h-3.5" />
               Clear
@@ -196,10 +196,10 @@ export default function Events({ archive = false }) {
           </div>
         ) : events.length === 0 ? (
           <div className="text-center py-24 space-y-4">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center mx-auto">
               <Inbox className="w-7 h-7 text-slate-500" />
             </div>
-            <p className="text-slate-400 font-medium">
+            <p className="text-slate-500 dark:text-slate-400 font-medium">
               {hasFilters ? "No events match your filters" : "No events found"}
             </p>
             {hasFilters && (

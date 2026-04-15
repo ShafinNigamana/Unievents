@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { LogIn, Mail, Lock, Loader2, Eye, EyeOff } from "lucide-react";
+import { LogIn, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import api from "../../services/api";
 import { useAuth } from "../../context/AuthContext";
+import Input from "../../components/ui/input";
+import Button from "../../components/ui/button";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -57,18 +59,18 @@ export default function Login() {
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">
             Welcome back
           </h1>
-          <p className="text-slate-400">
+          <p className="text-slate-500 dark:text-slate-400">
             Sign in to{" "}
             <span className="gradient-text font-semibold">UniEvents</span>
           </p>
         </div>
 
         {/* Card */}
-        <div className="glass-card p-8">
+        <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-lg dark:shadow-card p-8">
 
           {/* Error */}
           {error && (
-            <div className="mb-5 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center animate-fade-in">
+            <div className="mb-5 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 text-sm text-center animate-fade-in">
               {error}
             </div>
           )}
@@ -76,73 +78,59 @@ export default function Login() {
           <form onSubmit={handleSubmit} className="space-y-5">
 
             {/* Email */}
-            <div>
-              <label className="block mb-1.5">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                <input
-                  type="email"
-                  placeholder="you@university.edu"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="input pl-10"
-                  autoComplete="email"
-                  autoCorrect="off"
-                  autoCapitalize="off"
-                  spellCheck="false"
-                />
-              </div>
-            </div>
+            <Input
+              label="Email Address"
+              icon={Mail}
+              type="email"
+              placeholder="you@university.edu"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+              autoCorrect="off"
+              autoCapitalize="off"
+              spellCheck="false"
+            />
 
             {/* Password */}
-            <div>
-              <label className="block mb-1.5">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                <input
-                  type={showPw ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="input pl-10 pr-10"
-                  autoComplete="current-password"
-                />
+            <Input
+              label="Password"
+              icon={Lock}
+              type={showPw ? "text" : "password"}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+              rightIcon={
                 <button
                   type="button"
                   onClick={() => setShowPw((p) => !p)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                 >
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </div>
-            </div>
+              }
+            />
 
             {/* Submit */}
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="button-primary w-full mt-2"
+              loading={loading}
+              fullWidth
+              className="mt-2"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Signing in...
-                </>
-              ) : (
-                "Sign In"
-              )}
-            </button>
+              {loading ? "Signing in..." : "Sign In"}
+            </Button>
           </form>
 
           {/* Divider */}
-          <div className="divider" />
+          <div className="border-t border-slate-100 dark:border-white/8 my-5" />
 
           {/* Link */}
-          <p className="text-center text-sm text-slate-400">
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400">
             Don&apos;t have an account?{" "}
             <Link
               to="/register"
-              className="text-brand-400 hover:text-brand-300 font-medium transition-colors"
+              className="text-brand-500 dark:text-brand-400 hover:text-brand-600 dark:hover:text-brand-300 font-medium transition-colors"
             >
               Create account
             </Link>

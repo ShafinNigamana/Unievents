@@ -23,13 +23,13 @@ export function PageLoader() {
 /* ── Skeleton card ───────────────────────────── */
 export function SkeletonCard() {
     return (
-        <div className="glass-card p-5 space-y-3 animate-pulse">
-            <div className="h-4 bg-white/10 rounded-lg w-3/4" />
-            <div className="h-3 bg-white/8 rounded-lg w-1/2" />
-            <div className="h-3 bg-white/8 rounded-lg w-2/3" />
+        <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 rounded-2xl p-5 space-y-3 animate-pulse">
+            <div className="h-4 bg-slate-200 dark:bg-white/10 rounded-lg w-3/4" />
+            <div className="h-3 bg-slate-100 dark:bg-white/8 rounded-lg w-1/2" />
+            <div className="h-3 bg-slate-100 dark:bg-white/8 rounded-lg w-2/3" />
             <div className="flex gap-2 mt-2">
-                <div className="h-5 w-16 bg-white/10 rounded-full" />
-                <div className="h-5 w-20 bg-white/10 rounded-full" />
+                <div className="h-5 w-16 bg-slate-200 dark:bg-white/10 rounded-full" />
+                <div className="h-5 w-20 bg-slate-200 dark:bg-white/10 rounded-full" />
             </div>
         </div>
     );

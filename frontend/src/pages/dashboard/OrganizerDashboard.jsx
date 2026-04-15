@@ -16,13 +16,13 @@ import api from "../../services/api";
 /* ── Stat card ─────────────────────────────── */
 function StatCard({ icon: Icon, label, value, color, border }) {
   return (
-    <div className={`glass-card p-5 flex items-center gap-4 border ${border}`}>
+    <div className={`bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-5 flex items-center gap-4 ${border}`}>
       <div className={`p-3 rounded-xl ${color}`}>
         <Icon className="w-5 h-5 text-white" />
       </div>
       <div>
-        <p className="text-2xl font-bold text-white leading-none">{value ?? 0}</p>
-        <p className="text-xs text-slate-400 mt-1">{label}</p>
+        <p className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{value ?? 0}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</p>
       </div>
     </div>
   );
@@ -31,11 +31,11 @@ function StatCard({ icon: Icon, label, value, color, border }) {
 /* ── Action button ──────────────────────────── */
 function ActionBtn({ icon: Icon, label, onClick, variant = "ghost", disabled = false }) {
   const cls = {
-    ghost: "text-slate-400 hover:text-white hover:bg-white/10",
-    brand: "text-brand-400 hover:text-brand-300 hover:bg-brand-500/10",
-    danger: "text-red-400 hover:text-red-300 hover:bg-red-500/10",
-    success: "text-green-400 hover:text-green-300 hover:bg-green-500/10",
-    info: "text-blue-400 hover:text-blue-300 hover:bg-blue-500/10",
+    ghost: "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10",
+    brand: "text-brand-500 dark:text-brand-400 hover:text-brand-600 dark:hover:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-500/10",
+    danger: "text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10",
+    success: "text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-500/10",
+    info: "text-blue-500 dark:text-blue-400 hover:text-blue-600 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-500/10",
   };
   return (
     <button
@@ -126,7 +126,7 @@ function AttendeesModal({ event, onClose }) {
             return (
               <div
                 key={reg._id}
-                className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/8"
+                className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-white/5 border border-slate-100 dark:border-white/8"
               >
                 {/* Avatar */}
                 <div className="w-8 h-8 rounded-full bg-brand-gradient flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
@@ -137,7 +137,7 @@ function AttendeesModal({ event, onClose }) {
 
                 {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-white truncate">
+                  <p className="text-sm font-medium text-slate-900 dark:text-white truncate">
                     {u?.name ?? "—"}
                   </p>
                   <div className="flex items-center gap-3 mt-0.5 flex-wrap">
@@ -304,8 +304,8 @@ export default function OrganizerDashboard() {
         )}
 
         {/* Events Table */}
-        <div className="glass-card overflow-hidden">
-          <div className="px-6 py-4 border-b border-white/8 flex items-center justify-between">
+        <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100 dark:border-white/8 flex items-center justify-between">
             <h2 className="text-base font-semibold">My Events</h2>
             <span className="text-sm text-slate-500">{events.length} events</span>
           </div>
@@ -326,10 +326,12 @@ export default function OrganizerDashboard() {
               </button>
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+              {/* Desktop table */}
+              <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-white/8 text-xs text-slate-500 uppercase tracking-wide">
+                  <tr className="border-b border-slate-100 dark:border-white/8 text-xs text-slate-500 uppercase tracking-wide">
                     <th className="text-left px-6 py-3 font-medium">Event</th>
                     <th className="text-left px-4 py-3 font-medium">Date</th>
                     <th className="text-left px-4 py-3 font-medium">Status</th>
@@ -339,26 +341,26 @@ export default function OrganizerDashboard() {
                     <th className="text-right px-6 py-3 font-medium">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-white/5">
+                <tbody className="divide-y divide-slate-100 dark:divide-white/5">
                   {events.map((event) => (
                     <tr
                       key={event._id}
-                      className="hover:bg-white/3 transition-colors group"
+                      className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group"
                     >
                       {/* Title + poster thumbnail */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-600/20 to-purple-600/20">
+                          <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-100 dark:from-brand-600/20 to-purple-100 dark:to-purple-600/20">
                             {event.posterUrl ? (
                               <img src={event.posterUrl} alt="" className="w-full h-full object-cover" />
                             ) : (
                               <div className="w-full h-full flex items-center justify-center">
-                                <Calendar className="w-4 h-4 text-brand-500/40" />
+                                <Calendar className="w-4 h-4 text-brand-300 dark:text-brand-500/40" />
                               </div>
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-medium text-white text-sm leading-snug group-hover:text-brand-300 transition-colors truncate">
+                            <p className="font-medium text-slate-900 dark:text-white text-sm leading-snug group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors truncate">
                               {event.title}
                             </p>
                             {event.category && (
@@ -369,7 +371,7 @@ export default function OrganizerDashboard() {
                       </td>
 
                       {/* Date */}
-                      <td className="px-4 py-4 text-slate-400 whitespace-nowrap text-xs">
+                      <td className="px-4 py-4 text-slate-500 dark:text-slate-400 whitespace-nowrap text-xs">
                         {fmtDate(event.eventDate)}
                         {event.endDate && (
                           <span className="text-slate-500"> – {fmtDate(event.endDate)}</span>
@@ -384,13 +386,13 @@ export default function OrganizerDashboard() {
                       {/* Rating */}
                       <td className="px-4 py-4 whitespace-nowrap text-xs">
                         {event.reviewCount > 0 ? (
-                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 w-fit">
-                            <Star size={10} className="text-amber-400 fill-amber-400" />
-                            <span className="font-bold text-amber-300">{event.averageRating}</span>
-                            <span className="text-amber-300/60 font-medium">({event.reviewCount})</span>
+                          <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 w-fit">
+                            <Star size={10} className="text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400" />
+                            <span className="font-bold text-amber-700 dark:text-amber-300">{event.averageRating}</span>
+                            <span className="text-amber-500/60 dark:text-amber-300/60 font-medium">({event.reviewCount})</span>
                           </div>
                         ) : (
-                          <span className="text-slate-600">—</span>
+                          <span className="text-slate-400 dark:text-slate-600">—</span>
                         )}
                       </td>
 
@@ -399,7 +401,7 @@ export default function OrganizerDashboard() {
                         {(event.status === "published" || event.status === "archived") ? (
                           <div className="flex items-center gap-1.5">
                             <UserCheck className="w-3.5 h-3.5 text-green-400" />
-                            <span className="text-green-300 font-medium">
+                            <span className="text-green-700 dark:text-green-300 font-medium">
                               {event.registeredCount ?? 0}
                               {event.capacity
                                 ? <span className="text-slate-500"> / {event.capacity}</span>
@@ -407,7 +409,7 @@ export default function OrganizerDashboard() {
                             </span>
                           </div>
                         ) : (
-                          <span className="text-slate-600">—</span>
+                          <span className="text-slate-400 dark:text-slate-600">—</span>
                         )}
                       </td>
 
@@ -472,15 +474,58 @@ export default function OrganizerDashboard() {
                   ))}
                 </tbody>
               </table>
-            </div>
+              </div>
+
+              {/* Mobile card view */}
+              <div className="md:hidden divide-y divide-slate-100 dark:divide-white/8">
+                {events.map((event) => (
+                  <div key={event._id} className="p-4 space-y-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-100 dark:from-brand-600/20 to-purple-100 dark:to-purple-600/20">
+                        {event.posterUrl ? (
+                          <img src={event.posterUrl} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Calendar className="w-4 h-4 text-brand-300 dark:text-brand-500/40" />
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-medium text-slate-900 dark:text-white text-sm truncate">{event.title}</p>
+                        <p className="text-xs text-slate-500 mt-0.5">{fmtDate(event.eventDate)}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <Badge type="status" value={event.status} />
+                      <Badge type="approval" value={event.approvalStatus} />
+                    </div>
+                    <div className="flex items-center gap-1 flex-wrap">
+                      <ActionBtn icon={ChevronRight} label="View" onClick={() => navigate(`/events/${event._id}`)} />
+                      {(event.status === "published" || event.status === "archived") && (
+                        <ActionBtn icon={Users} label="Attendees" variant="info" onClick={() => setAttendeesEvent(event)} />
+                      )}
+                      {event.status !== "archived" && (
+                        <ActionBtn icon={Edit2} label="Edit" variant="brand" onClick={() => navigate(`/events/${event._id}/edit`)} />
+                      )}
+                      {event.status === "draft" && event.approvalStatus === "approved" && (
+                        <ActionBtn icon={statusLoading === event._id ? Loader2 : TrendingUp} label="Publish" variant="success" onClick={() => handlePublish(event)} disabled={statusLoading === event._id} />
+                      )}
+                      {event.status !== "archived" && (
+                        <ActionBtn icon={Trash2} label="Delete" variant="danger" onClick={() => setDeleteTarget(event)} />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
 
         {/* Approval info banners */}
         {counts.pending > 0 && (
-          <div className="glass-card p-4 flex items-center gap-3 border-amber-500/20">
-            <AlertCircle className="w-5 h-5 text-amber-400 flex-shrink-0" />
-            <p className="text-sm text-amber-300">
+          <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-4 flex items-center gap-3 border-amber-500/20">
+            <AlertCircle className="w-5 h-5 text-amber-500 dark:text-amber-400 flex-shrink-0" />
+            <p className="text-sm text-amber-700 dark:text-amber-300">
               <span className="font-semibold">
                 {counts.pending} event{counts.pending > 1 ? "s are" : " is"} waiting for admin approval.
               </span>
@@ -489,9 +534,9 @@ export default function OrganizerDashboard() {
           </div>
         )}
         {counts.approved > 0 && (
-          <div className="glass-card p-4 flex items-center gap-3 border-green-500/20">
-            <CheckCircle2 className="w-5 h-5 text-green-400 flex-shrink-0" />
-            <p className="text-sm text-green-300">
+          <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-4 flex items-center gap-3 border-green-500/20">
+            <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0" />
+            <p className="text-sm text-green-700 dark:text-green-300">
               <span className="font-semibold">
                 {counts.approved} event{counts.approved > 1 ? "s are" : " is"} approved
               </span>

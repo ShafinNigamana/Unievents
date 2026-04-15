@@ -59,7 +59,7 @@ export default function SavedEventsPage() {
 
                     {/* Count badge */}
                     {!loading && (
-                        <span className="self-start sm:self-auto text-xs font-medium px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-400 whitespace-nowrap">
+                        <span className="self-start sm:self-auto text-xs font-medium px-3 py-1.5 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                             {events.length} {events.length === 1 ? "event" : "events"} saved
                         </span>
                     )}
@@ -80,10 +80,10 @@ export default function SavedEventsPage() {
                     </div>
                 ) : events.length === 0 ? (
                     <div className="text-center py-24 space-y-4">
-                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto">
+                        <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center mx-auto">
                             <Inbox className="w-7 h-7 text-slate-500" />
                         </div>
-                        <p className="text-slate-400 font-medium">No saved events yet</p>
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">No saved events yet</p>
                         <p className="text-slate-500 text-sm">
                             Browse events and click the bookmark icon to save them here
                         </p>

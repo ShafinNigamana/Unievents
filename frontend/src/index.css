@@ -72,21 +72,20 @@
 
   /* Custom scrollbar */
   ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+    width: 10px;
+    height: 10px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #12122b;
+    @apply bg-surface-800/50 backdrop-blur-md;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #5a1fff;
-    border-radius: 999px;
+    @apply bg-brand-500/20 rounded-full border-[3px] border-transparent bg-clip-padding transition-colors;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #6d3aff;
+    @apply bg-brand-500/40;
   }
 }
 
@@ -149,10 +148,9 @@
 
   /* Auth page wrapper */
   .auth-page {
-    @apply min-h-screen flex items-center justify-center px-4 py-12;
-    background: radial-gradient(ellipse at 30% 10%, rgba(109, 58, 255, 0.18) 0%, transparent 50%),
-      radial-gradient(ellipse at 70% 90%, rgba(168, 85, 247, 0.12) 0%, transparent 50%),
-      #0d0d1a;
+    @apply min-h-screen flex items-center justify-center px-4 py-12 bg-surface-900;
+    background-image: radial-gradient(ellipse at 30% 10%, rgba(109, 58, 255, 0.18) 0%, transparent 50%),
+      radial-gradient(ellipse at 70% 90%, rgba(168, 85, 247, 0.12) 0%, transparent 50%);
   }
 }
 
@@ -208,6 +206,23 @@
   .revealed {
     opacity: 1 !important;
     transform: translateY(0) translateX(0) scale(1) !important;
+  }
+
+  /* ── Layout Utilities ── */
+  .container-tight {
+    @apply max-w-5xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .container-wide {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .section-spacing {
+    @apply py-16 md:py-24;
+  }
+
+  .glass-panel {
+    @apply bg-white/5 border border-white/10 backdrop-blur-md rounded-2xl;
   }
 }
 

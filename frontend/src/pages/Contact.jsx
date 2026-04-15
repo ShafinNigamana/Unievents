@@ -18,17 +18,17 @@ import Navbar from "../components/layout/Navbar";
 /* ── Contact Info Card ── */
 function InfoCard({ icon: Icon, color, title, value, href }) {
   const content = (
-    <div className="glass-card p-6 flex items-start gap-4 hover:border-brand-500/20 transition-all duration-300 group">
+    <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-6 flex items-start gap-4 hover:border-brand-500/20 transition-all duration-300 group">
       <div
         className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center ${color} group-hover:scale-110 transition-transform duration-300`}
       >
         <Icon className="w-5 h-5 text-white" />
       </div>
       <div>
-        <p className="text-xs text-slate-500 uppercase tracking-wider font-medium mb-1">
+        <p className="text-xs text-slate-400 dark:text-slate-500 uppercase tracking-wider font-medium mb-1">
           {title}
         </p>
-        <p className="text-sm text-white font-medium leading-relaxed">
+        <p className="text-sm text-slate-900 dark:text-white font-medium leading-relaxed">
           {value}
         </p>
       </div>
@@ -91,7 +91,7 @@ export default function Contact() {
     form.message.trim();
 
   return (
-    <div className="min-h-screen bg-surface-900 text-slate-100">
+    <div className="min-h-screen bg-surface-900 text-slate-900 dark:text-slate-100">
       <Navbar />
 
       {/* ── Hero ── */}
@@ -107,12 +107,12 @@ export default function Contact() {
             Get in Touch
           </div>
 
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-slate-900 dark:text-white leading-tight mb-4">
             We'd love to{" "}
             <span className="gradient-text">hear from you</span>
           </h1>
 
-          <p className="text-base sm:text-lg text-slate-400 leading-relaxed max-w-xl mx-auto">
+          <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 leading-relaxed max-w-xl mx-auto">
             Have a question, suggestion, or need support? Drop us a message and
             we'll get back to you as soon as possible.
           </p>
@@ -129,7 +129,7 @@ export default function Contact() {
                 <p className="text-brand-400 text-sm font-semibold uppercase tracking-widest mb-2">
                   Contact Information
                 </p>
-                <p className="text-slate-400 text-sm leading-relaxed">
+                <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">
                   Reach out through any of these channels, or fill in the form
                   and we'll respond within 24 hours.
                 </p>
@@ -165,16 +165,16 @@ export default function Contact() {
 
             {/* ── Right: Form ── */}
             <div className="lg:col-span-3">
-              <div className="glass-card p-6 sm:p-8">
+              <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-lg dark:shadow-card p-6 sm:p-8">
                 {/* Success message */}
                 {success && (
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-green-500/10 border border-green-500/20 mb-6 animate-fade-in">
-                    <CheckCircle className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/20 mb-6 animate-fade-in">
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-green-300">
+                      <p className="text-sm font-medium text-green-700 dark:text-green-300">
                         Message sent successfully!
                       </p>
-                      <p className="text-xs text-green-400/70 mt-0.5">
+                      <p className="text-xs text-green-600/70 dark:text-green-400/70 mt-0.5">
                         We'll get back to you within 24 hours.
                       </p>
                     </div>
@@ -183,13 +183,13 @@ export default function Contact() {
 
                 {/* Error message */}
                 {error && (
-                  <div className="flex items-start gap-3 p-4 rounded-xl bg-red-500/10 border border-red-500/20 mb-6 animate-fade-in">
-                    <AlertCircle className="w-5 h-5 text-red-400 flex-shrink-0 mt-0.5" />
+                  <div className="flex items-start gap-3 p-4 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 mb-6 animate-fade-in">
+                    <AlertCircle className="w-5 h-5 text-red-500 dark:text-red-400 flex-shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-sm font-medium text-red-300">
+                      <p className="text-sm font-medium text-red-700 dark:text-red-300">
                         Failed to send message
                       </p>
-                      <p className="text-xs text-red-400/70 mt-0.5">{error}</p>
+                      <p className="text-xs text-red-500/70 dark:text-red-400/70 mt-0.5">{error}</p>
                     </div>
                   </div>
                 )}

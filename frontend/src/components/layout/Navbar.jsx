@@ -15,13 +15,13 @@ function NavItem({ to, icon: Icon, label, end = false, onClick }) {
       end={end}
       onClick={onClick}
       className={({ isActive }) =>
-        `flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-xl transition-all duration-200 ${isActive
+        `flex items-center gap-2 text-sm font-medium px-4 py-2 rounded-xl transition-all duration-300 relative group ${isActive
           ? "bg-brand-500/10 text-brand-600 dark:bg-brand-500/20 dark:text-brand-300 shadow-sm dark:shadow-none"
           : "text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/5"
         }`
       }
     >
-      <Icon className="w-4 h-4 flex-shrink-0" />
+      <Icon className={`w-4 h-4 flex-shrink-0 transition-transform duration-300 group-hover:scale-110`} />
       <span>{label}</span>
     </NavLink>
   );
@@ -60,7 +60,7 @@ function Avatar({ name }) {
     ? name.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase()
     : "?";
   return (
-    <div className="w-8 h-8 rounded-full bg-brand-gradient flex items-center justify-center text-xs font-bold text-white flex-shrink-0">
+    <div className="w-9 h-9 rounded-full bg-brand-gradient flex items-center justify-center text-xs font-bold text-white flex-shrink-0 shadow-glow-sm">
       {initials}
     </div>
   );
@@ -78,7 +78,16 @@ export default function Navbar() {
   const { theme, toggleTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [dropOpen, setDropOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const dropRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {
@@ -104,174 +113,196 @@ export default function Navbar() {
           : "/";
 
   return (
-    <nav className="sticky top-0 z-40 border-b border-white/8 backdrop-blur-xl bg-surface-900/80">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="h-16 flex items-center justify-between gap-4">
+    <>
+      <nav 
+        className={`sticky top-0 z-50 transition-all duration-500 border-b ${
+          scrolled 
+            ? "py-2 bg-white/80 dark:bg-surface-900/90 backdrop-blur-xl border-slate-200 dark:border-white/10 shadow-lg dark:shadow-2xl" 
+            : "py-4 bg-transparent border-transparent"
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="h-12 flex items-center justify-between gap-4">
 
-          {/* Brand */}
-          <Link to={dashPath} className="flex items-center gap-2 flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-brand-gradient flex items-center justify-center">
-              <Calendar className="w-4 h-4 text-white" />
-            </div>
-            <span className="text-lg font-bold gradient-text tracking-tight">UniEvents</span>
-          </Link>
+            {/* Brand */}
+            <Link to={dashPath} className="flex items-center gap-2.5 flex-shrink-0 group">
+              <div className="w-10 h-10 rounded-xl bg-brand-gradient flex items-center justify-center shadow-glow-sm group-hover:scale-110 transition-transform duration-500">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              <span className="text-xl font-bold gradient-text tracking-tight items-center hidden sm:flex">
+                UniEvents
+              </span>
+            </Link>
 
-          {/* Desktop nav links */}
-          {user && (
-            <div className="hidden md:flex items-center gap-1 flex-1 pl-2">
-              <NavLinks role={user.role} />
-            </div>
-          )}
-
-          {/* Right side */}
-          <div className="flex items-center gap-2">
-
-            {/* Public Links (Desktop) */}
-            <div className="hidden lg:flex items-center gap-5 mr-3 border-r border-slate-200 dark:border-white/10 pr-5 text-sm font-medium text-slate-500 dark:text-slate-400">
-              <Link to="/about" className="hover:text-slate-900 dark:hover:text-white transition-colors">About</Link>
-              <Link to="/faq" className="hover:text-slate-900 dark:hover:text-white transition-colors">FAQ</Link>
-              <Link to="/contact" className="hover:text-slate-900 dark:hover:text-white transition-colors">Contact</Link>
-            </div>
-
-            {/* Theme toggle */}
-            <button
-              onClick={toggleTheme}
-              aria-label="Toggle theme"
-              className="p-2 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-white dark:hover:bg-white/10 transition-all duration-200"
-            >
-              {theme === "dark"
-                ? <Sun className="w-4 h-4" />
-                : <Moon className="w-4 h-4" />}
-            </button>
-
-            {/* User dropdown */}
+            {/* Desktop nav links */}
             {user && (
-              <div className="hidden md:block relative" ref={dropRef}>
-                <button
-                  onClick={() => setDropOpen(!dropOpen)}
-                  className={`flex items-center gap-2.5 p-1.5 pr-3 rounded-full border transition-all duration-200 focus:outline-none ${
-                    dropOpen 
-                      ? "bg-slate-100 border-slate-300 shadow-inner dark:bg-white/10 dark:border-white/20"
-                      : "bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300 dark:bg-white/5 dark:border-white/10 dark:hover:bg-white/10 dark:hover:border-white/20 shadow-sm dark:shadow-none"
-                  }`}
-                >
-                  <Avatar name={user.name} />
-                  <div className="hidden lg:flex items-center gap-2">
-                    <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-[120px] truncate leading-none">
-                      {user.name}
-                    </span>
-                  </div>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${dropOpen ? "rotate-180" : ""}`}
-                  />
-                </button>
+              <div className="hidden md:flex items-center gap-1 flex-1 pl-6">
+                <NavLinks role={user.role} />
+              </div>
+            )}
 
-                {dropOpen && (
-                  <div
-                    className="absolute right-0 mt-2 w-64 z-50 rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden animate-fade-in bg-white dark:bg-[#14142b]"
+            {/* Right side */}
+            <div className="flex items-center gap-3">
+
+              {/* Public Links (Desktop) */}
+              <div className="hidden lg:flex items-center gap-6 mr-4 border-r border-slate-200 dark:border-white/10 pr-6 text-sm font-medium text-slate-500 dark:text-slate-400">
+                <Link to="/about" className="hover:text-brand-500 transition-colors">About</Link>
+                <Link to="/faq" className="hover:text-brand-500 transition-colors">FAQ</Link>
+                <Link to="/contact" className="hover:text-brand-500 transition-colors">Contact</Link>
+              </div>
+
+              {/* Theme toggle */}
+              <button
+                onClick={toggleTheme}
+                aria-label="Toggle theme"
+                className="p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border border-transparent hover:border-slate-200 dark:hover:border-white/10 transition-all duration-300"
+              >
+                {theme === "dark"
+                  ? <Sun className="w-5 h-5" />
+                  : <Moon className="w-5 h-5" />}
+              </button>
+
+              {/* User dropdown */}
+              {user && (
+                <div className="hidden md:block relative" ref={dropRef}>
+                  <button
+                    onClick={() => setDropOpen(!dropOpen)}
+                    className={`flex items-center gap-3 p-1 pr-3 rounded-full border transition-all duration-300 focus:outline-none ${
+                      dropOpen 
+                        ? "bg-slate-100 dark:bg-white/10 border-slate-300 dark:border-white/20 shadow-sm dark:shadow-glow-sm"
+                        : "bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 hover:bg-slate-50 dark:hover:bg-white/10 hover:border-slate-300 dark:hover:border-white/20 shadow-sm dark:shadow-none"
+                    }`}
                   >
-                    {/* User info */}
-                    <div className="px-4 py-3 bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/8">
-                      <div className="flex items-center gap-3">
-                        <Avatar name={user.name} />
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap mb-0.5">
+                    <Avatar name={user.name} />
+                    <div className="hidden lg:flex flex-col items-start leading-tight">
+                      <span className="text-sm font-semibold text-slate-700 dark:text-slate-200 max-w-[120px] truncate">
+                        {user.name}
+                      </span>
+                      <span className="text-[10px] text-slate-400 dark:text-slate-500 uppercase tracking-widest font-bold">
+                        {user.role}
+                      </span>
+                    </div>
+                    <ChevronDown
+                      className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-300 ${dropOpen ? "rotate-180" : ""}`}
+                    />
+                  </button>
+
+                  {dropOpen && (
+                    <div
+                      className="absolute right-0 mt-3 w-64 z-50 rounded-2xl shadow-xl dark:shadow-2xl border border-slate-200 dark:border-white/10 overflow-hidden animate-slide-up bg-white dark:bg-[#0d0d1a]/95 backdrop-blur-2xl"
+                    >
+                      {/* User info */}
+                      <div className="px-5 py-4 bg-slate-50 dark:bg-white/5 border-b border-slate-100 dark:border-white/8">
+                        <div className="flex items-center gap-3">
+                          <Avatar name={user.name} />
+                          <div className="min-w-0">
                             <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{user.name}</p>
-                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${ROLE_COLOR[user.role] ?? ""}`}>
-                              {user.role}
-                            </span>
+                            <p className="text-xs text-slate-500 dark:text-slate-500 truncate mt-0.5">{user.email}</p>
                           </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 truncate">{user.email}</p>
                         </div>
                       </div>
-                    </div>
 
-                    {/* Dropdown actions */}
-                    <div className="p-1.5 space-y-0.5">
-                      {/* Profile link — students only */}
-                      {user.role === "student" && (
+                      {/* Dropdown actions */}
+                      <div className="p-2 space-y-1">
+                        {user.role === "student" && (
+                          <button
+                            onClick={() => { navigate("/profile"); setDropOpen(false); }}
+                            className="w-full flex items-center justify-between px-4 py-2.5 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/8 rounded-xl transition-all group"
+                          >
+                            <div className="flex items-center gap-3">
+                              <UserCircle className="w-4 h-4 text-brand-400" />
+                              <span>My Profile</span>
+                            </div>
+                            <ChevronRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-brand-400" />
+                          </button>
+                        )}
+
                         <button
-                          onClick={() => { navigate("/profile"); setDropOpen(false); }}
-                          className="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-white/8 rounded-xl transition-colors group"
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-all"
                         >
-                          <div className="flex items-center gap-2.5">
-                            <UserCircle className="w-4 h-4 text-brand-500 dark:text-brand-400" />
-                            <span>My Profile</span>
-                          </div>
-                          <ChevronRight className="w-3.5 h-3.5 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all text-brand-500" />
+                          <LogOut className="w-4 h-4" />
+                          <span>Sign out</span>
                         </button>
-                      )}
-
-                      {/* Sign out */}
-                      <button
-                        onClick={handleLogout}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-500 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Sign out</span>
-                      </button>
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
 
-            {/* Mobile hamburger */}
-            {user && (
-              <button
-                onClick={() => setMobileOpen(!mobileOpen)}
-                className="md:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition-colors"
-                aria-label="Toggle menu"
-              >
-                {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            )}
+              {/* Mobile hamburger */}
+              {user && (
+                <button
+                  onClick={() => setMobileOpen(!mobileOpen)}
+                  className="md:hidden p-2.5 rounded-xl text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/5 border border-slate-200 dark:border-white/10 transition-colors"
+                  aria-label="Toggle menu"
+                >
+                  {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+              )}
 
-            {/* Not logged in */}
-            {!user && (
-              <div className="flex items-center gap-2">
-                <Link to="/login" className="button-ghost py-2 px-4 text-sm">Sign in</Link>
-                <Link to="/register" className="button-primary py-2 px-4 text-sm">Register</Link>
-              </div>
-            )}
+              {/* Not logged in */}
+              {!user && (
+                <div className="flex items-center gap-3">
+                  <Link to="/login" className="text-sm font-medium text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors px-2">Sign in</Link>
+                  <Link to="/register" className="button-primary py-2 px-5 text-sm">Register</Link>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </nav>
 
-      {/* Mobile drawer */}
-      {user && mobileOpen && (
-        <div className="md:hidden border-t border-white/8 bg-surface-900/98 backdrop-blur-xl">
-          <div className="px-4 pt-3 pb-2 space-y-1">
-            <NavLinks role={user.role} onClose={closeMobile} />
+      {/* Mobile Drawer Overlay */}
+      <div 
+        className={`fixed inset-0 z-[60] bg-black/60 backdrop-blur-sm transition-opacity duration-500 md:hidden ${
+          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+        onClick={closeMobile}
+      />
+
+      {/* Mobile Drawer Content */}
+      <div 
+        className={`fixed inset-y-0 right-0 z-[70] w-72 bg-white dark:bg-[#0d0d1a] border-l border-slate-200 dark:border-white/10 shadow-2xl transition-transform duration-500 ease-in-out md:hidden flex flex-col ${
+          mobileOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="p-6 flex items-center justify-between border-b border-slate-100 dark:border-white/10">
+          <span className="text-lg font-bold gradient-text">Menu</span>
+          <button onClick={closeMobile} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-slate-400 transition-colors">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
+          {user && <NavLinks role={user.role} onClose={closeMobile} />}
+          
+          <div className="pt-6 mt-6 border-t border-slate-100 dark:border-white/10 space-y-2">
+            <Link to="/about" onClick={closeMobile} className="block px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">About</Link>
+            <Link to="/faq" onClick={closeMobile} className="block px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">FAQ</Link>
+            <Link to="/contact" onClick={closeMobile} className="block px-4 py-2 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">Contact</Link>
           </div>
-          <div className="px-5 py-3 border-t border-white/8 flex items-center justify-between text-sm">
-            <Link to="/about" onClick={closeMobile} className="text-slate-400 hover:text-white transition-colors">About</Link>
-            <Link to="/faq" onClick={closeMobile} className="text-slate-400 hover:text-white transition-colors">FAQ</Link>
-            <Link to="/contact" onClick={closeMobile} className="text-slate-400 hover:text-white transition-colors">Contact</Link>
-          </div>
-          <div className="px-4 py-3 border-t border-white/8 flex items-center justify-between">
+        </div>
+
+        {user && (
+          <div className="p-6 border-t border-slate-100 dark:border-white/10 space-y-4">
             <div className="flex items-center gap-3">
               <Avatar name={user.name} />
-              <div>
-                <div className="flex items-center gap-2">
-                  <p className="text-sm font-semibold text-white">{user.name}</p>
-                  <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${ROLE_COLOR[user.role] ?? ""}`}>
-                    {user.role}
-                  </span>
-                </div>
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{user.name}</p>
                 <p className="text-xs text-slate-500 truncate">{user.email}</p>
               </div>
             </div>
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 text-sm text-red-400 hover:text-red-300 transition-colors"
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400 font-medium hover:bg-red-100 dark:hover:bg-red-500/20 transition-all"
             >
               <LogOut className="w-4 h-4" />
-              Logout
+              Sign out
             </button>
           </div>
-        </div>
-      )}
-    </nav>
+        )}
+      </div>
+    </>
   );
 }

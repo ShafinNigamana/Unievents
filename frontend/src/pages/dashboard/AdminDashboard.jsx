@@ -14,13 +14,13 @@ import api from "../../services/api";
 /* ── Stat card ─────────────────────────────── */
 function StatCard({ icon: Icon, label, value, color, border }) {
   return (
-    <div className={`glass-card p-5 flex items-center gap-4 border ${border}`}>
+    <div className={`bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-5 flex items-center gap-4 ${border}`}>
       <div className={`p-3 rounded-xl ${color}`}>
         <Icon className="w-5 h-5 text-white" />
       </div>
       <div>
-        <p className="text-2xl font-bold text-white leading-none">{value ?? 0}</p>
-        <p className="text-xs text-slate-400 mt-1">{label}</p>
+        <p className="text-2xl font-bold text-slate-900 dark:text-white leading-none">{value ?? 0}</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{label}</p>
       </div>
     </div>
   );
@@ -46,11 +46,11 @@ const fmtDate = (d) =>
 /* ── Action button ──────────────────────────── */
 function ActionBtn({ icon: Icon, label, onClick, variant = "ghost", loading: busy = false }) {
   const cls = {
-    ghost: "text-slate-400 hover:text-white hover:bg-white/10",
-    success: "text-green-400 hover:text-green-300 hover:bg-green-500/10",
-    danger: "text-red-400   hover:text-red-300   hover:bg-red-500/10",
-    warning: "text-amber-400 hover:text-amber-300 hover:bg-amber-500/10",
-    brand: "text-brand-400 hover:text-brand-300 hover:bg-brand-500/10",
+    ghost: "text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-white/10",
+    success: "text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-500/10",
+    danger: "text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-500/10",
+    warning: "text-amber-500 dark:text-amber-400 hover:text-amber-600 dark:hover:text-amber-300 hover:bg-amber-50 dark:hover:bg-amber-500/10",
+    brand: "text-brand-500 dark:text-brand-400 hover:text-brand-600 dark:hover:text-brand-300 hover:bg-brand-50 dark:hover:bg-brand-500/10",
   };
   return (
     <button
@@ -69,71 +69,104 @@ function ActionBtn({ icon: Icon, label, onClick, variant = "ghost", loading: bus
 /* ── Reusable events table ───────────────────── */
 function EventsTable({ events, actions }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-white/8 text-xs text-slate-500 uppercase tracking-wide">
-            <th className="text-left px-6 py-3 font-medium">Event</th>
-            <th className="text-left px-4 py-3 font-medium">Date</th>
-            <th className="text-left px-4 py-3 font-medium">Status</th>
-            <th className="text-left px-4 py-3 font-medium">Rating</th>
-            <th className="text-left px-4 py-3 font-medium">Approval</th>
-            <th className="text-right px-6 py-3 font-medium">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-white/5">
-          {events.map((event) => (
-            <tr key={event._id} className="hover:bg-white/3 transition-colors group">
-              <td className="px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-600/20 to-purple-600/20">
-                    {event.posterUrl ? (
-                      <img src={event.posterUrl} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center">
-                        <Calendar className="w-4 h-4 text-brand-500/40" />
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-white text-sm leading-snug group-hover:text-brand-300 transition-colors truncate">
-                      {event.title}
-                    </p>
-                    {event.category && (
-                      <p className="text-xs text-slate-500 mt-0.5">{event.category}</p>
-                    )}
-                  </div>
-                </div>
-              </td>
-              <td className="px-4 py-4 text-slate-400 whitespace-nowrap text-xs">
-                {fmtDate(event.eventDate)}
-                {event.endDate && (
-                  <span className="text-slate-500"> – {fmtDate(event.endDate)}</span>
-                )}
-              </td>
-              <td className="px-4 py-4"><Badge type="status" value={event.status} /></td>
-              <td className="px-4 py-4 whitespace-nowrap text-xs">
-                {event.reviewCount > 0 ? (
-                  <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 w-fit">
-                    <Star size={10} className="text-amber-400 fill-amber-400" />
-                    <span className="font-bold text-amber-300">{event.averageRating}</span>
-                    <span className="text-amber-300/60 font-medium">({event.reviewCount})</span>
-                  </div>
-                ) : (
-                  <span className="text-slate-600 text-sm">—</span>
-                )}
-              </td>
-              <td className="px-4 py-4"><Badge type="approval" value={event.approvalStatus} /></td>
-              <td className="px-6 py-4">
-                <div className="flex items-center gap-1 justify-end flex-wrap">
-                  {actions(event)}
-                </div>
-              </td>
+    <>
+      {/* Desktop table */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full text-sm">
+          <thead>
+            <tr className="border-b border-slate-100 dark:border-white/8 text-xs text-slate-500 uppercase tracking-wide">
+              <th className="text-left px-6 py-3 font-medium">Event</th>
+              <th className="text-left px-4 py-3 font-medium">Date</th>
+              <th className="text-left px-4 py-3 font-medium">Status</th>
+              <th className="text-left px-4 py-3 font-medium">Rating</th>
+              <th className="text-left px-4 py-3 font-medium">Approval</th>
+              <th className="text-right px-6 py-3 font-medium">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+          </thead>
+          <tbody className="divide-y divide-slate-100 dark:divide-white/5">
+            {events.map((event) => (
+              <tr key={event._id} className="hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors group">
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-100 dark:from-brand-600/20 to-purple-100 dark:to-purple-600/20">
+                      {event.posterUrl ? (
+                        <img src={event.posterUrl} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <Calendar className="w-4 h-4 text-brand-300 dark:text-brand-500/40" />
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-medium text-slate-900 dark:text-white text-sm leading-snug group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors truncate">
+                        {event.title}
+                      </p>
+                      {event.category && (
+                        <p className="text-xs text-slate-500 mt-0.5">{event.category}</p>
+                      )}
+                    </div>
+                  </div>
+                </td>
+                <td className="px-4 py-4 text-slate-500 dark:text-slate-400 whitespace-nowrap text-xs">
+                  {fmtDate(event.eventDate)}
+                  {event.endDate && (
+                    <span className="text-slate-400 dark:text-slate-500"> – {fmtDate(event.endDate)}</span>
+                  )}
+                </td>
+                <td className="px-4 py-4"><Badge type="status" value={event.status} /></td>
+                <td className="px-4 py-4 whitespace-nowrap text-xs">
+                  {event.reviewCount > 0 ? (
+                    <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 w-fit">
+                      <Star size={10} className="text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400" />
+                      <span className="font-bold text-amber-700 dark:text-amber-300">{event.averageRating}</span>
+                      <span className="text-amber-500/60 dark:text-amber-300/60 font-medium">({event.reviewCount})</span>
+                    </div>
+                  ) : (
+                    <span className="text-slate-400 dark:text-slate-600 text-sm">—</span>
+                  )}
+                </td>
+                <td className="px-4 py-4"><Badge type="approval" value={event.approvalStatus} /></td>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-1 justify-end flex-wrap">
+                    {actions(event)}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile card view */}
+      <div className="md:hidden divide-y divide-slate-100 dark:divide-white/8">
+        {events.map((event) => (
+          <div key={event._id} className="p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg overflow-hidden flex-shrink-0 bg-gradient-to-br from-brand-100 dark:from-brand-600/20 to-purple-100 dark:to-purple-600/20">
+                {event.posterUrl ? (
+                  <img src={event.posterUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <Calendar className="w-4 h-4 text-brand-300 dark:text-brand-500/40" />
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-medium text-slate-900 dark:text-white text-sm truncate">{event.title}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{fmtDate(event.eventDate)}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <Badge type="status" value={event.status} />
+              <Badge type="approval" value={event.approvalStatus} />
+            </div>
+            <div className="flex items-center gap-1 flex-wrap">
+              {actions(event)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }
 
@@ -282,7 +315,7 @@ export default function AdminDashboard() {
             title="Pending Approvals" count={pending.length}
           />
 
-          <div className="glass-card overflow-hidden">
+          <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card overflow-hidden">
             {loadingPending ? (
               <div className="p-6"><SkeletonGrid count={2} /></div>
             ) : pending.length === 0 ? (
@@ -322,7 +355,7 @@ export default function AdminDashboard() {
             title="All Published & Archived Events" count={allEvents.length}
           />
 
-          <div className="glass-card overflow-hidden">
+          <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card overflow-hidden">
             {loadingAll ? (
               <div className="p-6"><SkeletonGrid count={3} /></div>
             ) : allEvents.length === 0 ? (
@@ -350,7 +383,7 @@ export default function AdminDashboard() {
             title="Soft Deleted Events" count={deleted.length}
           />
 
-          <div className="glass-card overflow-hidden">
+          <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card overflow-hidden">
             {loadingDeleted ? (
               <div className="p-6"><SkeletonGrid count={2} /></div>
             ) : deleted.length === 0 ? (

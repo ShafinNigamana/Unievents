@@ -18,14 +18,14 @@ function formatDate(dateStr) {
 function StatusBadge({ status }) {
     if (status === "registered") {
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-500/15 text-green-400 border border-green-500/25">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/25">
                 <CheckCircle2 className="w-3 h-3" />
                 Registered
             </span>
         );
     }
     return (
-        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-500/15 text-red-400 border border-red-500/25">
+        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-50 dark:bg-red-500/15 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-500/25">
             <XCircle className="w-3 h-3" />
             Cancelled
         </span>
@@ -43,13 +43,13 @@ function RegistrationCard({ registration, onCancel, cancelling }) {
     const canCancel = isRegistered && isPublished;
 
     return (
-        <div className="glass-card p-5 flex flex-col gap-4 hover:border-brand-500/20 transition-all duration-200">
+        <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-5 flex flex-col gap-4 hover:border-brand-500/20 transition-all duration-200">
             {/* Header row */}
             <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                     <h3
                         onClick={() => navigate(`/events/${event._id}`)}
-                        className="text-sm font-semibold text-white hover:text-brand-300 transition-colors cursor-pointer line-clamp-2 leading-snug mb-1"
+                        className="text-sm font-semibold text-slate-900 dark:text-white hover:text-brand-600 dark:hover:text-brand-300 transition-colors cursor-pointer line-clamp-2 leading-snug mb-1"
                     >
                         {event.title}
                     </h3>
@@ -91,7 +91,7 @@ function RegistrationCard({ registration, onCancel, cancelling }) {
             </p>
 
             {/* Footer row */}
-            <div className="flex items-center justify-between pt-1 border-t border-white/5">
+            <div className="flex items-center justify-between pt-1 border-t border-slate-100 dark:border-white/5">
                 <button
                     onClick={() => navigate(`/events/${event._id}`)}
                     className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition-colors"
@@ -192,7 +192,7 @@ export default function MyRegistrations() {
 
                     {/* Count badge */}
                     {!loading && (
-                        <span className="self-start sm:self-auto text-xs font-medium px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-slate-400 whitespace-nowrap">
+                        <span className="self-start sm:self-auto text-xs font-medium px-3 py-1.5 rounded-full bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 whitespace-nowrap">
                             {activeCount} active · {cancelledCount} cancelled
                         </span>
                     )}
@@ -211,8 +211,8 @@ export default function MyRegistrations() {
                                 onClick={() => setFilter(tab.key)}
                                 className={`px-4 py-2 rounded-xl text-xs font-medium border transition-all duration-200
                   ${filter === tab.key
-                                        ? "bg-brand-500/20 border-brand-500/40 text-brand-300"
-                                        : "bg-white/5 border-white/10 text-slate-400 hover:bg-white/10 hover:text-white"
+                                        ? "bg-brand-500/20 border-brand-500/40 text-brand-600 dark:text-brand-300"
+                                        : "bg-slate-50 dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white"
                                     }`}
                             >
                                 {tab.label}
@@ -236,10 +236,10 @@ export default function MyRegistrations() {
                     </div>
                 ) : filtered.length === 0 ? (
                     <div className="text-center py-24 space-y-4">
-                        <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto">
+                        <div className="w-16 h-16 rounded-2xl bg-slate-50 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center mx-auto">
                             <Inbox className="w-7 h-7 text-slate-500" />
                         </div>
-                        <p className="text-slate-400 font-medium">
+                        <p className="text-slate-500 dark:text-slate-400 font-medium">
                             {filter === "all"
                                 ? "No registrations yet"
                                 : `No ${filter} registrations`}

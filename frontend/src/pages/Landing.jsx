@@ -321,7 +321,7 @@ function StarfieldCanvas() {
 function AnimatedStat({ icon: Icon, color, label, target, suffix = "" }) {
   const { count, ref } = useCountUp(target || 0, 2200);
   return (
-    <div ref={ref} className="glass-card p-5 sm:p-6 flex flex-col items-center text-center gap-2 hover:border-brand-500/25 transition-all duration-300 group">
+    <div ref={ref} className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-5 sm:p-6 flex flex-col items-center text-center gap-2 hover:border-brand-500/25 transition-all duration-300 group">
       <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${color} group-hover:scale-110 transition-transform duration-300`}>
         <Icon className="w-5 h-5 text-white" />
       </div>
@@ -340,38 +340,39 @@ function EventCard({ event }) {
   });
 
   return (
-    <Link to={`/events/${event._id}`} className="glass-card overflow-hidden group hover:border-brand-500/25 transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
+    <Link to={`/events/${event._id}`} className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card overflow-hidden group hover:border-brand-500/25 transition-all duration-300 hover:-translate-y-1 h-full flex flex-col">
       {event.posterUrl ? (
         <div className="h-40 overflow-hidden">
           <img
             src={event.posterUrl}
             alt={event.title}
+            loading="lazy"
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         </div>
       ) : (
-        <div className="h-40 bg-gradient-to-br from-brand-700/30 to-purple-700/20 flex items-center justify-center">
-          <Calendar className="w-10 h-10 text-brand-500/40" />
+        <div className="h-40 bg-gradient-to-br from-brand-100 dark:from-brand-700/30 to-purple-100 dark:to-purple-700/20 flex items-center justify-center">
+          <Calendar className="w-10 h-10 text-brand-300 dark:text-brand-500/40" />
         </div>
       )}
       <div className="p-5">
         <div className="flex items-center gap-2 mb-2">
-          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-500/15 text-brand-300 border border-brand-500/20">
+          <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-brand-50 dark:bg-brand-500/15 text-brand-600 dark:text-brand-300 border border-brand-200 dark:border-brand-500/20">
             {event.category}
           </span>
           {event.averageRating > 0 && (
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/20 flex items-center gap-1">
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-200 dark:border-amber-500/20 flex items-center gap-1">
               <Star className="w-2.5 h-2.5 fill-current" /> {event.averageRating.toFixed(1)}
             </span>
           )}
         </div>
-        <h3 className="text-white text-sm font-semibold mb-1 line-clamp-1 group-hover:text-brand-300 transition-colors">{event.title}</h3>
+        <h3 className="text-slate-900 dark:text-white text-sm font-semibold mb-1 line-clamp-1 group-hover:text-brand-600 dark:group-hover:text-brand-300 transition-colors">{event.title}</h3>
         <div className="flex items-center gap-3 text-xs text-slate-500">
           <span className="flex items-center gap-1"><Calendar className="w-3 h-3" /> {date}</span>
           {event.venue && <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {event.venue}</span>}
         </div>
         {event.interestedCount > 0 && (
-          <p className="text-[10px] text-slate-600 mt-2 flex items-center gap-1">
+          <p className="text-[10px] text-slate-400 dark:text-slate-600 mt-2 flex items-center gap-1">
             <Heart className="w-3 h-3 text-pink-500/60" /> {event.interestedCount} interested
           </p>
         )}
@@ -383,17 +384,17 @@ function EventCard({ event }) {
 /* ── FAQ Accordion Item ── */
 function FAQPreviewItem({ faq, isOpen, onToggle }) {
   return (
-    <div className={`border border-white/8 rounded-xl transition-all duration-300 ${
-      isOpen ? "bg-white/5 border-brand-500/20" : "hover:border-white/15"
+    <div className={`border rounded-xl transition-all duration-300 ${
+      isOpen ? "bg-slate-50 dark:bg-white/5 border-brand-200 dark:border-brand-500/20" : "border-slate-200 dark:border-white/8 hover:border-slate-300 dark:hover:border-white/15"
     }`}>
       <button onClick={onToggle} className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left cursor-pointer">
-        <span className="text-sm font-medium text-white leading-snug">{faq.question}</span>
-        <ChevronDown className={`w-4 h-4 text-slate-500 flex-shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-brand-400" : ""}`} />
+        <span className="text-sm font-medium text-slate-900 dark:text-white leading-snug">{faq.question}</span>
+        <ChevronDown className={`w-4 h-4 text-slate-400 dark:text-slate-500 flex-shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-brand-500 dark:text-brand-400" : ""}`} />
       </button>
       <div className={`overflow-hidden transition-all duration-300 ${isOpen ? "max-h-60 opacity-100" : "max-h-0 opacity-0"}`}>
         <div className="px-5 pb-4 pt-0">
-          <div className="border-t border-white/8 pt-3">
-            <p className="text-sm text-slate-400 leading-relaxed">{faq.answer}</p>
+          <div className="border-t border-slate-100 dark:border-white/8 pt-3">
+            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">{faq.answer}</p>
           </div>
         </div>
       </div>
@@ -404,13 +405,13 @@ function FAQPreviewItem({ faq, isOpen, onToggle }) {
 /* ── Benefit card ── */
 function BenefitCard({ icon: Icon, color, title, description }) {
   return (
-    <div className="glass-card p-7 flex flex-col gap-4 hover:border-brand-500/30 transition-all duration-300 group h-full">
+    <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-7 flex flex-col gap-4 hover:border-brand-500/30 transition-all duration-300 group h-full">
       <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${color} group-hover:scale-110 transition-transform duration-300`}>
         <Icon className="w-6 h-6 text-white" />
       </div>
       <div>
-        <h3 className="text-white font-semibold text-base mb-2">{title}</h3>
-        <p className="text-slate-400 text-sm leading-relaxed">{description}</p>
+        <h3 className="text-slate-900 dark:text-white font-semibold text-base mb-2">{title}</h3>
+        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{description}</p>
       </div>
     </div>
   );
@@ -424,8 +425,8 @@ function Step({ number, title, description }) {
         {number}
       </div>
       <div>
-        <h3 className="text-white font-semibold mb-1">{title}</h3>
-        <p className="text-slate-400 text-sm leading-relaxed">{description}</p>
+        <h3 className="text-slate-900 dark:text-white font-semibold mb-1">{title}</h3>
+        <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{description}</p>
       </div>
     </div>
   );
@@ -498,7 +499,7 @@ export default function Landing() {
   ];
 
   return (
-    <div className="min-h-screen bg-surface-900 text-slate-100">
+    <div className="min-h-screen bg-surface-900 text-slate-900 dark:text-slate-100">
       <Navbar />
 
       {/* ════════════════════════ HERO ════════════════════════ */}
@@ -519,14 +520,14 @@ export default function Landing() {
           </div>
 
           {/* Headline with typing effect */}
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-slate-900 dark:text-white leading-tight mb-6">
             Every campus moment{" "}
             <br className="hidden sm:block" />
             <span className="gradient-text">{typedText}</span>
             <span className="animate-pulse text-brand-400">|</span>
           </h1>
 
-          <p className="text-lg sm:text-xl text-slate-400 leading-relaxed max-w-2xl mx-auto mb-10 animate-slide-up">
+          <p className="text-lg sm:text-xl text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl mx-auto mb-10 animate-slide-up">
             UniEvents is where students discover experiences that matter,
             organizers build events that shine, and campus life truly comes alive.
           </p>
@@ -568,11 +569,11 @@ export default function Landing() {
       </section>
 
       {/* ════════════════════════ LIVE STATS ════════════════════════ */}
-      <section ref={statsRef} className="py-20 px-4 border-y border-white/5">
+      <section ref={statsRef} className="py-20 px-4 border-y border-slate-100 dark:border-white/5">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12 reveal">
             <p className="text-brand-400 text-sm font-semibold uppercase tracking-widest mb-3">Live Platform Data</p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">Numbers that grow with us</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Numbers that grow with us</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
             {statItems.map((item, i) => (
@@ -591,7 +592,7 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-10 reveal">
               <div>
                 <p className="text-brand-400 text-sm font-semibold uppercase tracking-widest mb-2">Happening Soon</p>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white">Upcoming events</h2>
+                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Upcoming events</h2>
               </div>
               <Link to="/events" className="button-ghost py-2 px-5 text-sm">
                 View all <ArrowRight className="w-4 h-4" />
@@ -610,12 +611,12 @@ export default function Landing() {
 
       {/* ════════════════════════ POPULAR EVENTS ════════════════════════ */}
       {popularEvents.length > 0 && popularEvents.some(e => e.interestedCount > 0) && (
-        <section ref={popularRef} className="py-24 px-4 border-t border-white/5">
+        <section ref={popularRef} className="py-24 px-4 border-t border-slate-100 dark:border-white/5">
           <div className="max-w-6xl mx-auto">
             <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-4 mb-10 reveal">
               <div>
                 <p className="text-pink-400 text-sm font-semibold uppercase tracking-widest mb-2">Most Loved</p>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white">Popular events</h2>
+                <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Popular events</h2>
               </div>
               <Link to="/events" className="button-ghost py-2 px-5 text-sm">
                 Explore more <ArrowRight className="w-4 h-4" />
@@ -633,12 +634,12 @@ export default function Landing() {
       )}
 
       {/* ════════════════════════ BENEFITS ════════════════════════ */}
-      <section ref={benefitsRef} className="py-24 px-4 border-t border-white/5">
+      <section ref={benefitsRef} className="py-24 px-4 border-t border-slate-100 dark:border-white/5">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-14 reveal">
             <p className="text-brand-400 text-sm font-semibold uppercase tracking-widest mb-3">Why students love it</p>
-            <h2 className="text-3xl sm:text-4xl font-bold text-white">Built for the real campus experience</h2>
-            <p className="text-slate-400 mt-3 max-w-xl mx-auto">Whether you're there to discover, participate, or create — UniEvents has your back.</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Built for the real campus experience</h2>
+            <p className="text-slate-500 dark:text-slate-400 mt-3 max-w-xl mx-auto">Whether you're there to discover, participate, or create — UniEvents has your back.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
@@ -658,13 +659,13 @@ export default function Landing() {
       </section>
 
       {/* ════════════════════════ HOW IT WORKS ════════════════════════ */}
-      <section ref={howRef} className="py-24 px-4 border-t border-white/5">
+      <section ref={howRef} className="py-24 px-4 border-t border-slate-100 dark:border-white/5">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div className="reveal-left">
               <p className="text-brand-400 text-sm font-semibold uppercase tracking-widest mb-3">How it works</p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Up and running in minutes</h2>
-              <p className="text-slate-400 mb-10">No setup. No complexity. Just sign up, look around, and start experiencing campus life on a whole new level.</p>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">Up and running in minutes</h2>
+              <p className="text-slate-500 dark:text-slate-400 mb-10">No setup. No complexity. Just sign up, look around, and start experiencing campus life on a whole new level.</p>
               <div className="space-y-8">
                 {[
                   { n: "1", t: "Create your free account", d: "Sign up as a student to discover events, or as an organiser to start creating them. Takes less than a minute." },
@@ -678,16 +679,16 @@ export default function Landing() {
               </div>
             </div>
             <div className="relative reveal-right" style={{ "--reveal-delay": "0.2s" }}>
-              <div className="glass-card p-6 space-y-4">
-                <div className="flex items-center gap-3 pb-4 border-b border-white/8">
+              <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-lg dark:shadow-card p-6 space-y-4">
+                <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-white/8">
                   <div className="w-10 h-10 rounded-xl bg-brand-gradient flex items-center justify-center">
                     <Zap className="w-5 h-5 text-white" />
                   </div>
                   <div>
-                    <p className="text-white text-sm font-semibold">Tech Hackathon 2025</p>
+                    <p className="text-slate-900 dark:text-white text-sm font-semibold">Tech Hackathon 2025</p>
                     <p className="text-slate-500 text-xs">Technical · March 15</p>
                   </div>
-                  <span className="ml-auto text-[10px] font-bold px-2 py-1 rounded-full bg-green-500/15 text-green-400 border border-green-500/25">Live</span>
+                  <span className="ml-auto text-[10px] font-bold px-2 py-1 rounded-full bg-green-50 dark:bg-green-500/15 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-500/25">Live</span>
                 </div>
                 {[
                   { label: "Venue", value: "Main Auditorium" },
@@ -696,16 +697,16 @@ export default function Landing() {
                 ].map((r) => (
                   <div key={r.label} className="flex justify-between text-sm">
                     <span className="text-slate-500">{r.label}</span>
-                    <span className="text-slate-200 font-medium">{r.value}</span>
+                    <span className="text-slate-700 dark:text-slate-200 font-medium">{r.value}</span>
                   </div>
                 ))}
                 <div className="pt-2 flex flex-wrap gap-2">
                   {["React", "Node.js", "AI", "Design"].map((t) => (
-                    <span key={t} className="text-[11px] px-2.5 py-1 rounded-full border border-white/10 bg-white/5 text-slate-400">{t}</span>
+                    <span key={t} className="text-[11px] px-2.5 py-1 rounded-full border border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 text-slate-500 dark:text-slate-400">{t}</span>
                   ))}
                 </div>
                 <div className="pt-2 flex items-center gap-2 text-xs text-slate-500">
-                  <CheckCircle className="w-3.5 h-3.5 text-green-400" />
+                  <CheckCircle className="w-3.5 h-3.5 text-green-500 dark:text-green-400" />
                   Approved & verified event
                 </div>
               </div>
@@ -717,11 +718,11 @@ export default function Landing() {
 
       {/* ════════════════════════ FAQ PREVIEW ════════════════════════ */}
       {faqs.length > 0 && (
-        <section ref={faqRef} className="py-24 px-4 border-t border-white/5">
+        <section ref={faqRef} className="py-24 px-4 border-t border-slate-100 dark:border-white/5">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12 reveal">
               <p className="text-brand-400 text-sm font-semibold uppercase tracking-widest mb-3">Common Questions</p>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white">Got questions? We've got answers</h2>
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white">Got questions? We've got answers</h2>
             </div>
             <div className="space-y-3">
               {faqs.map((faq, i) => (
@@ -746,13 +747,13 @@ export default function Landing() {
       {/* ════════════════════════ FINAL CTA ════════════════════════ */}
       <section ref={ctaRef} className="py-24 px-4">
         <div className="max-w-3xl mx-auto text-center">
-          <div className="glass-card p-12 relative overflow-hidden border-brand-500/20 reveal-scale">
+          <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-lg dark:shadow-card p-12 relative overflow-hidden border-brand-500/20 reveal-scale">
             <div className="absolute inset-0 pointer-events-none"
               style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(109,58,255,0.18) 0%, transparent 70%)" }} />
             <div className="relative z-10">
               <Sparkles className="w-10 h-10 text-brand-400 mx-auto mb-4" />
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">Your campus is waiting</h2>
-              <p className="text-slate-400 text-lg mb-8 max-w-lg mx-auto">
+              <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-white mb-4">Your campus is waiting</h2>
+              <p className="text-slate-500 dark:text-slate-400 text-lg mb-8 max-w-lg mx-auto">
                 Don't sit on the sidelines. Join UniEvents and start experiencing every corner of campus life.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">

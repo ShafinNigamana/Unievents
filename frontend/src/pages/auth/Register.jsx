@@ -2,9 +2,11 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
   UserPlus, Mail, Lock, User, Hash,
-  Loader2, Eye, EyeOff, GraduationCap, Briefcase
+  Eye, EyeOff, GraduationCap, Briefcase
 } from "lucide-react";
 import api from "../../services/api";
+import Input from "../../components/ui/input";
+import Button from "../../components/ui/button";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -76,14 +78,14 @@ export default function Register() {
             <UserPlus className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-1">Create account</h1>
-          <p className="text-slate-400">
+          <p className="text-slate-500 dark:text-slate-400">
             Join{" "}
             <span className="gradient-text font-semibold">UniEvents</span>
           </p>
         </div>
 
         {/* Card */}
-        <div className="glass-card p-8">
+        <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-lg dark:shadow-card p-8">
 
           {/* Role selector */}
           <div className="mb-6">
@@ -93,15 +95,15 @@ export default function Register() {
               <button
                 type="button"
                 onClick={() => setRole("student")}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200 ${role === "student"
-                    ? "border-brand-500 bg-brand-500/15 shadow-glow-sm"
-                    : "border-white/10 bg-white/5 hover:bg-white/8 hover:border-white/20"
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-300 ${role === "student"
+                    ? "border-brand-500 bg-brand-50 dark:bg-brand-500/15 shadow-sm dark:shadow-glow-sm"
+                    : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/8 hover:border-slate-300 dark:hover:border-white/20"
                   }`}
               >
                 <GraduationCap
-                  className={`w-6 h-6 ${role === "student" ? "text-brand-400" : "text-slate-400"}`}
+                  className={`w-6 h-6 ${role === "student" ? "text-brand-500 dark:text-brand-400" : "text-slate-400"}`}
                 />
-                <span className={`text-sm font-medium ${role === "student" ? "text-brand-300" : "text-slate-300"}`}>
+                <span className={`text-sm font-medium ${role === "student" ? "text-brand-600 dark:text-brand-300" : "text-slate-600 dark:text-slate-300"}`}>
                   Student
                 </span>
               </button>
@@ -110,15 +112,15 @@ export default function Register() {
               <button
                 type="button"
                 onClick={() => setRole("organizer")}
-                className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-200 ${role === "organizer"
-                    ? "border-brand-500 bg-brand-500/15 shadow-glow-sm"
-                    : "border-white/10 bg-white/5 hover:bg-white/8 hover:border-white/20"
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border transition-all duration-300 ${role === "organizer"
+                    ? "border-brand-500 bg-brand-50 dark:bg-brand-500/15 shadow-sm dark:shadow-glow-sm"
+                    : "border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 hover:bg-slate-100 dark:hover:bg-white/8 hover:border-slate-300 dark:hover:border-white/20"
                   }`}
               >
                 <Briefcase
-                  className={`w-6 h-6 ${role === "organizer" ? "text-brand-400" : "text-slate-400"}`}
+                  className={`w-6 h-6 ${role === "organizer" ? "text-brand-500 dark:text-brand-400" : "text-slate-400"}`}
                 />
-                <span className={`text-sm font-medium ${role === "organizer" ? "text-brand-300" : "text-slate-300"}`}>
+                <span className={`text-sm font-medium ${role === "organizer" ? "text-brand-600 dark:text-brand-300" : "text-slate-600 dark:text-slate-300"}`}>
                   Organizer
                 </span>
               </button>
@@ -127,12 +129,12 @@ export default function Register() {
 
           {/* Alerts */}
           {error && (
-            <div className="mb-5 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-sm text-center animate-fade-in">
+            <div className="mb-5 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/30 text-red-600 dark:text-red-400 text-sm text-center animate-fade-in">
               {error}
             </div>
           )}
           {success && (
-            <div className="mb-5 px-4 py-3 rounded-xl bg-green-500/10 border border-green-500/30 text-green-400 text-sm text-center animate-fade-in">
+            <div className="mb-5 px-4 py-3 rounded-xl bg-green-50 dark:bg-green-500/10 border border-green-200 dark:border-green-500/30 text-green-700 dark:text-green-400 text-sm text-center animate-fade-in">
               {success}
             </div>
           )}
@@ -140,124 +142,99 @@ export default function Register() {
           <form onSubmit={handleSubmit} className="space-y-4">
 
             {/* Name */}
-            <div>
-              <label className="block mb-1.5">Full Name</label>
-              <div className="relative">
-                <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                <input
-                  type="text"
-                  placeholder="John Doe"
-                  value={form.name}
-                  onChange={set("name")}
-                  className="input pl-10"
-                  autoComplete="name"
-                />
-              </div>
-            </div>
+            <Input
+              label="Full Name"
+              icon={User}
+              type="text"
+              placeholder="John Doe"
+              value={form.name}
+              onChange={set("name")}
+              autoComplete="name"
+            />
 
             {/* Email */}
-            <div>
-              <label className="block mb-1.5">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                <input
-                  type="email"
-                  placeholder="you@university.edu"
-                  value={form.email}
-                  onChange={set("email")}
-                  className="input pl-10"
-                  autoComplete="email"
-                />
-              </div>
-            </div>
+            <Input
+              label="Email Address"
+              icon={Mail}
+              type="email"
+              placeholder="you@university.edu"
+              value={form.email}
+              onChange={set("email")}
+              autoComplete="email"
+            />
 
             {/* Enrollment ID — student only */}
             {role === "student" && (
               <div className="animate-fade-in">
-                <label className="block mb-1.5">Enrollment ID</label>
-                <div className="relative">
-                  <Hash className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="e.g. 22CS0001"
-                    value={form.enrollmentId}
-                    onChange={set("enrollmentId")}
-                    className="input pl-10"
-                  />
-                </div>
+                <Input
+                  label="Enrollment ID"
+                  icon={Hash}
+                  type="text"
+                  placeholder="e.g. 22CS0001"
+                  value={form.enrollmentId}
+                  onChange={set("enrollmentId")}
+                />
               </div>
             )}
 
             {/* Password */}
-            <div>
-              <label className="block mb-1.5">Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                <input
-                  type={showPw ? "text" : "password"}
-                  placeholder="Min. 6 characters"
-                  value={form.password}
-                  onChange={set("password")}
-                  className="input pl-10 pr-10"
-                  autoComplete="new-password"
-                />
+            <Input
+              label="Password"
+              icon={Lock}
+              type={showPw ? "text" : "password"}
+              placeholder="Min. 6 characters"
+              value={form.password}
+              onChange={set("password")}
+              autoComplete="new-password"
+              rightIcon={
                 <button
                   type="button"
                   onClick={() => setShowPw(!showPw)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                 >
                   {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </div>
-            </div>
+              }
+            />
 
             {/* Confirm Password */}
-            <div>
-              <label className="block mb-1.5">Confirm Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
-                <input
-                  type={showConfirmPw ? "text" : "password"}
-                  placeholder="Repeat your password"
-                  value={form.confirmPassword}
-                  onChange={set("confirmPassword")}
-                  className="input pl-10 pr-10"
-                  autoComplete="new-password"
-                />
+            <Input
+              label="Confirm Password"
+              icon={Lock}
+              type={showConfirmPw ? "text" : "password"}
+              placeholder="Repeat your password"
+              value={form.confirmPassword}
+              onChange={set("confirmPassword")}
+              autoComplete="new-password"
+              rightIcon={
                 <button
                   type="button"
                   onClick={() => setShowConfirmPw(!showConfirmPw)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors"
+                  className="text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
                 >
                   {showConfirmPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
-              </div>
-            </div>
+              }
+            />
 
             {/* Submit */}
-            <button
+            <Button
               type="submit"
-              disabled={loading}
-              className="button-primary w-full mt-2"
+              loading={loading}
+              fullWidth
+              className="mt-2"
             >
-              {loading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                "Create Account"
-              )}
-            </button>
+              {loading ? "Creating account..." : "Create Account"}
+            </Button>
           </form>
 
-          <div className="divider" />
+          <div className="border-t border-slate-100 dark:border-white/8 my-5" />
 
-          <p className="text-center text-sm text-slate-400">
+          <p className="text-center text-sm text-slate-500 dark:text-slate-400">
             Already have an account?{" "}
             <Link
               to="/login"
-              className="text-brand-400 hover:text-brand-300 font-medium transition-colors"
+              className="text-brand-500 dark:text-brand-400 hover:text-brand-600 dark:hover:text-brand-300 font-medium transition-colors"
             >
               Sign in
             </Link>

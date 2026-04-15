@@ -31,11 +31,11 @@ function formatDateRange(start, end) {
 function MetaRow({ icon: Icon, label, value, color = "text-brand-400" }) {
   if (!value) return null;
   return (
-    <div className="flex items-start gap-3 py-3 border-b border-white/8 last:border-0">
+    <div className="flex items-start gap-3 py-3 border-b border-slate-100 dark:border-white/8 last:border-0">
       <Icon className={`w-4 h-4 mt-0.5 flex-shrink-0 ${color}`} />
       <div>
         <p className="text-xs text-slate-500 uppercase tracking-wide mb-0.5">{label}</p>
-        <p className="text-sm text-white">{value}</p>
+        <p className="text-sm text-slate-900 dark:text-white">{value}</p>
       </div>
     </div>
   );
@@ -301,7 +301,7 @@ export default function EventDetail() {
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-1.5 text-sm text-slate-400 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to events
@@ -318,8 +318,8 @@ export default function EventDetail() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium
                   transition-all duration-200
                   ${isInterested
-                    ? "bg-pink-500/20 border-pink-500/40 text-pink-300 hover:bg-pink-500/30"
-                    : "bg-white/5 border-white/10 text-slate-400 hover:bg-pink-500/15 hover:border-pink-500/30 hover:text-pink-300"
+                    ? "bg-pink-500/20 border-pink-500/40 text-pink-600 dark:text-pink-300 hover:bg-pink-500/30"
+                    : "bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-pink-50 dark:hover:bg-pink-500/15 hover:border-pink-300 dark:hover:border-pink-500/30 hover:text-pink-600 dark:hover:text-pink-300"
                   }
                   ${interestLoading ? "opacity-60 cursor-not-allowed" : ""}
                 `}
@@ -342,8 +342,8 @@ export default function EventDetail() {
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-sm font-medium
                   transition-all duration-200
                   ${isSaved
-                    ? "bg-brand-500/20 border-brand-500/40 text-brand-300 hover:bg-brand-500/30"
-                    : "bg-white/5 border-white/10 text-slate-400 hover:bg-brand-500/15 hover:border-brand-500/30 hover:text-brand-300"
+                    ? "bg-brand-500/20 border-brand-500/40 text-brand-600 dark:text-brand-300 hover:bg-brand-500/30"
+                    : "bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-brand-50 dark:hover:bg-brand-500/15 hover:border-brand-300 dark:hover:border-brand-500/30 hover:text-brand-600 dark:hover:text-brand-300"
                   }
                   ${saving ? "opacity-60 cursor-not-allowed" : ""}
                 `}
@@ -358,7 +358,7 @@ export default function EventDetail() {
 
             {/* Interest count for non-students */}
             {!isStudent && interestCount > 0 && (
-              <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-sm text-slate-400">
+              <div className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm text-slate-500 dark:text-slate-400">
                 <Heart className="w-4 h-4 fill-pink-400 text-pink-400" />
                 <span>{interestCount} interested</span>
               </div>
@@ -367,7 +367,7 @@ export default function EventDetail() {
         </div>
 
         {/* Hero card */}
-        <div className="glass-card overflow-hidden">
+        <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card overflow-hidden">
           {event.posterUrl && (
             <div className="relative w-full max-h-80 overflow-hidden">
               <img
@@ -386,7 +386,7 @@ export default function EventDetail() {
                 <Badge type="status" value={event.status} />
                 <Badge type="approval" value={event.approvalStatus} />
                 {event.category && (
-                  <span className="inline-flex items-center gap-1 text-xs bg-brand-500/15 text-brand-300 border border-brand-500/20 px-2.5 py-0.5 rounded-full">
+                  <span className="inline-flex items-center gap-1 text-xs bg-brand-50 dark:bg-brand-500/15 text-brand-600 dark:text-brand-300 border border-brand-200 dark:border-brand-500/20 px-2.5 py-0.5 rounded-full">
                     <Tag className="w-3 h-3" />
                     {event.category}
                   </span>
@@ -396,14 +396,14 @@ export default function EventDetail() {
               {event.reviewCount > 0 && (
                 <div className="flex items-center gap-2">
                   <StarRating rating={event.averageRating} size={16} />
-                  <span className="text-sm font-bold text-white">{event.averageRating}</span>
+                  <span className="text-sm font-bold text-slate-900 dark:text-white">{event.averageRating}</span>
                   <span className="text-xs text-slate-500">({event.reviewCount} reviews)</span>
                 </div>
               )}
             </div>
 
             {/* Title */}
-            <h1 className="text-2xl sm:text-3xl font-bold text-white mb-3 leading-tight">
+            <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white mb-3 leading-tight">
               {event.title}
             </h1>
 
@@ -411,7 +411,7 @@ export default function EventDetail() {
             {event.tags?.length > 0 && (
               <div className="flex items-center gap-2 flex-wrap mb-6">
                 {event.tags.map((tag) => (
-                  <span key={tag} className="text-xs text-slate-400 border border-white/10 px-2.5 py-1 rounded-full">
+                  <span key={tag} className="text-xs text-slate-500 dark:text-slate-400 border border-slate-200 dark:border-white/10 px-2.5 py-1 rounded-full">
                     #{tag}
                   </span>
                 ))}
@@ -419,7 +419,7 @@ export default function EventDetail() {
             )}
 
             {/* Meta grid */}
-            <div className="glass-card p-4 mb-6 divide-y divide-white/8">
+            <div className="bg-slate-50 dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 rounded-xl p-4 mb-6 divide-y divide-slate-100 dark:divide-white/8">
               <MetaRow icon={Calendar} label="Date" value={formatDateRange(event.eventDate, event.endDate)} />
               <MetaRow icon={Clock} label="Time" value={timeDisplay} />
               <MetaRow
@@ -458,7 +458,7 @@ export default function EventDetail() {
                   <FileText className="w-3.5 h-3.5" />
                   About this event
                 </div>
-                <p className="text-slate-300 leading-relaxed text-sm whitespace-pre-wrap">
+                <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-sm whitespace-pre-wrap">
                   {event.description}
                 </p>
               </div>
@@ -466,7 +466,7 @@ export default function EventDetail() {
 
             {/* ── Registration Action ── */}
             {canRegister && (
-              <div className="mt-6 pt-6 border-t border-white/8">
+              <div className="mt-6 pt-6 border-t border-slate-100 dark:border-white/8">
                 {registrationError && (
                   <p className="text-xs text-red-400 mb-3">{registrationError}</p>
                 )}
@@ -481,7 +481,7 @@ export default function EventDetail() {
                       onClick={handleCancelRegistration}
                       disabled={registrationLoading}
                       className={`flex items-center gap-2 px-4 py-2.5 rounded-xl border text-sm font-medium
-                        bg-white/5 border-white/10 text-slate-400 hover:bg-red-500/15 hover:border-red-500/30 hover:text-red-300
+                        bg-white dark:bg-white/5 border-slate-200 dark:border-white/10 text-slate-500 dark:text-slate-400 hover:bg-red-50 dark:hover:bg-red-500/15 hover:border-red-300 dark:hover:border-red-500/30 hover:text-red-600 dark:hover:text-red-300
                         transition-all duration-200
                         ${registrationLoading ? "opacity-60 cursor-not-allowed" : ""}
                       `}
@@ -519,9 +519,9 @@ export default function EventDetail() {
 
         {/* Archive notice */}
         {event.status === "archived" && (
-          <div className="glass-card p-4 flex items-center gap-3 border-blue-500/20">
-            <Archive className="w-5 h-5 text-blue-400 flex-shrink-0" />
-            <p className="text-sm text-blue-300">
+          <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-4 flex items-center gap-3 border-blue-500/20">
+            <Archive className="w-5 h-5 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+            <p className="text-sm text-blue-700 dark:text-blue-300">
               This event has been archived and is preserved for institutional records.
             </p>
           </div>
@@ -531,13 +531,13 @@ export default function EventDetail() {
         <div className="space-y-6 pt-6">
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-brand-400" />
-            <h2 className="text-xl font-bold text-white">Reviews</h2>
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Reviews</h2>
             <span className="text-sm text-slate-500 ml-1">({reviews.length})</span>
           </div>
 
           {canReview && (!userReview || isEditing) && (
-            <div className="glass-card p-6 border-brand-500/20 animate-fade-in">
-              <h3 className="text-sm font-semibold text-white mb-4">
+            <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-6 border-brand-500/20 animate-fade-in">
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white mb-4">
                 {isEditing ? "Update your review" : "Rate this event"}
               </h3>
               <form onSubmit={handleSubmitReview} className="space-y-4">
@@ -576,7 +576,7 @@ export default function EventDetail() {
           )}
 
           {userReview && !isEditing && (
-            <div className="glass-card p-6 border-brand-500/30 bg-brand-500/5">
+            <div className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-6 border-brand-500/30 bg-brand-50 dark:bg-brand-500/5">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-xs font-bold text-brand-400 uppercase tracking-widest">Your Review</span>
                 <div className="flex items-center gap-2">
@@ -592,7 +592,7 @@ export default function EventDetail() {
                 <StarRating rating={userReview.rating} size={16} />
                 <span className="text-xs text-slate-500">{new Date(userReview.createdAt).toLocaleDateString()}</span>
               </div>
-              <p className="text-slate-300 text-sm italic">"{userReview.comment || "No comment provided."}"</p>
+              <p className="text-slate-600 dark:text-slate-300 text-sm italic">"{userReview.comment || "No comment provided."}"</p>
             </div>
           )}
 
@@ -602,19 +602,19 @@ export default function EventDetail() {
                 <Loader2 className="w-8 h-8 text-slate-700 animate-spin mx-auto" />
               </div>
             ) : reviews.length === 0 ? (
-              <div className="text-center py-16 glass-card border-dashed">
+              <div className="text-center py-16 bg-white dark:bg-white/[0.03] border border-dashed border-slate-200 dark:border-white/10 rounded-2xl">
                 <StarIcon className="w-8 h-8 text-slate-800 mx-auto mb-3" />
                 <p className="text-slate-500 text-sm">No reviews yet. Be the first to rate!</p>
               </div>
             ) : (
               reviews.filter(r => r._id !== userReview?._id).map((r) => (
-                <div key={r._id} className="glass-card p-5 border-white/5">
+                <div key={r._id} className="bg-white dark:bg-white/[0.03] border border-slate-200/60 dark:border-white/10 backdrop-blur-xl rounded-2xl shadow-sm dark:shadow-card p-5 border-white/5">
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-white">{r.userId?.name || "Anonymous Student"}</span>
+                    <span className="text-sm font-semibold text-slate-900 dark:text-white">{r.userId?.name || "Anonymous Student"}</span>
                     <span className="text-[10px] text-slate-500 uppercase">{new Date(r.createdAt).toLocaleDateString()}</span>
                   </div>
                   <div className="mb-2"><StarRating rating={r.rating} size={14} /></div>
-                  {r.comment && <p className="text-slate-400 text-sm leading-relaxed">{r.comment}</p>}
+                  {r.comment && <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed">{r.comment}</p>}
                 </div>
               ))
             )}
