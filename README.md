@@ -1,128 +1,82 @@
-# UniEvents - University Event Planning, Management and Digital Archive Platform
+# UniEvents
 
-A full-stack MERN platform for managing the complete lifecycle of university events, from draft creation and approval workflows to participation tracking and long-term digital archiving.
+UniEvents is a MERN-based platform built for university event workflows.
 
-## Live Demo
+The main goal was simple: stop managing events across random Google Forms, chats, and sheets, and move everything into one structured system with proper roles and approvals.
+
+## Live Links
 
 - Frontend: https://unievents-portal.vercel.app/
-- Backend API: Hosted on Render (private/internal)
+- Backend API: hosted on Render (private/internal)
 
-## Overview
+## What This Project Does
 
-UniEvents centralizes event operations that are often split across chat apps, forms, and spreadsheets. The system provides role-aware workflows so students, organizers, and administrators can collaborate in one place with clear accountability.
+UniEvents supports the full event journey:
 
-The platform enables:
+- Organizers create and manage events
+- Admins review and approve events before publishing
+- Students browse events, register, save, and review them
+- The university keeps archived events as long-term records
 
-- Organizers to create and manage events
-- Admins to review and approve publishing workflows
-- Students to discover, register, review, and bookmark events
-- Institutions to preserve archived event history as read-only records
+## Core Features
 
-## Key Features
+### Auth and Access
 
-### Authentication and Security
+- JWT authentication
+- Role-based access (Student, Organizer, Admin)
+- Password hashing with bcryptjs
+- Protected routes and middleware-based authorization
+- Security middleware: Helmet, CORS policy, rate limiting
 
-- JWT-based authentication
-- Role-Based Access Control (Student, Organizer, Admin)
-- Password hashing using bcryptjs
-- Protected API routes and centralized auth middleware
-- Security hardening with Helmet, CORS controls, and rate limiting
+### Event Workflow
 
-### Event Management
+- Create and edit events
+- Approval flow handled by admin
+- Lifecycle support:
+  - Draft -> Pending -> Published -> Archived
+  - Rejected -> Edited -> Resubmitted
+- Soft delete and restore
 
-- Create, edit, and manage events
-- Admin approval pipeline for publishing
-- Lifecycle-driven state transitions
-  - Draft -> Pending Approval -> Published -> Archived
-  - Rejected -> Edit -> Resubmit
-- Soft delete and restore support
+### Participation
 
-### Participation System
-
-- Event registration with capacity constraints
-- Cancel registration
-- Organizer attendee visibility
-- Eligibility checks using academic/profile rules:
+- Registration with seat/capacity checks
+- Registration cancellation
+- Organizer attendee view
+- Eligibility filters by:
   - Department
   - Semester
   - Year
   - CGPA
   - Skills
 
-### User Interaction
+### Interaction
 
 - Save/bookmark events
 - Mark interest
-- Event reviews and ratings
+- Ratings and reviews
 
-### User Profiles
+### Public Modules
 
-- Profile dashboard with activity summary
-- Academic profile management (CGPA, skills, etc.)
-- Password update flow
-
-### Public and Institutional Modules
-
-- Public landing page with dynamic statistics
-- FAQ module
-- Contact module
-- Public stats and informational APIs
-
-## Architecture
-
-UniEvents follows a layered architecture:
-
-Frontend (React + Tailwind CSS)
--> Backend (Node.js + Express REST API)
--> Database (MongoDB + Mongoose)
--> Media Storage (Cloudinary)
-
-Responsibilities by layer:
-
-- Frontend: UI, client-side routing, and role-based UX
-- Backend: business logic, validation, and secure API handling
-- Database: persistent storage for users, events, registrations, and reviews
-- Cloudinary: media upload and asset hosting
+- Landing page with dynamic stats
+- FAQ system
+- Contact form + admin-side message access
 
 ## Tech Stack
 
-| Layer          | Technology                                     |
-| -------------- | ---------------------------------------------- |
-| Frontend       | React, Vite, Tailwind CSS, Axios, React Router |
-| Backend        | Node.js, Express                               |
-| Database       | MongoDB, Mongoose                              |
-| Validation     | Zod                                            |
-| Authentication | JWT, bcryptjs                                  |
-| Security       | Helmet, CORS, express-rate-limit               |
-| Media Storage  | Cloudinary                                     |
-| Deployment     | Vercel, Render, MongoDB Atlas                  |
+- Frontend: React, Vite, Tailwind CSS, Axios, React Router
+- Backend: Node.js, Express
+- Database: MongoDB, Mongoose
+- Validation: Zod
+- Auth: JWT, bcryptjs
+- Media: Cloudinary
+- Deployment: Vercel, Render, MongoDB Atlas
 
-## System Design Summary
+## Architecture (High Level)
 
-### Use Cases
-
-Primary actors:
-
-- Student
-- Organizer
-- Admin
-
-### Core Data Model
-
-Key entities:
-
-- User
-- Event
-- Registration
-- EventReview
-- FAQ
-- ContactMessage
-
-### Event Lifecycle
-
-Draft -> Pending -> Published -> Archived
-Rejected -> Edit -> Resubmit
-Soft Delete -> Trash -> Restore
+Frontend (React + Tailwind)
+-> Backend API (Express)
+-> MongoDB (Mongoose)
+-> Cloudinary (media assets)
 
 ## Project Structure
 
@@ -149,23 +103,23 @@ MERN/
 |- README.md
 ```
 
-## Installation and Setup
+## Local Setup
 
-### 1. Clone the Repository
+### 1) Clone
 
 ```bash
 git clone https://github.com/your-username/unievents.git
 cd unievents
 ```
 
-### 2. Backend Setup
+### 2) Backend
 
 ```bash
 cd backend
 npm install
 ```
 
-Create a .env file in backend/:
+Create backend .env:
 
 ```env
 PORT=5000
@@ -178,20 +132,20 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
 
-Run backend in development mode:
+Run backend:
 
 ```bash
 npm run dev
 ```
 
-### 3. Frontend Setup
+### 3) Frontend
 
 ```bash
 cd ../frontend
 npm install
 ```
 
-Create a .env file in frontend/:
+Create frontend .env:
 
 ```env
 VITE_API_URL=http://localhost:5000/api/v1
@@ -203,53 +157,53 @@ Run frontend:
 npm run dev
 ```
 
-## API and Health Check
+## Useful Endpoints
 
-- Base API path: /api/v1
-- Health endpoint: /api/v1/health
+- Base API: /api/v1
+- Health check: /api/v1/health
 
-## Available Scripts
+## Scripts
 
 ### Backend
 
-- npm run dev -> Start server with nodemon
-- npm start -> Start server with node
+- npm run dev
+- npm start
 
 ### Frontend
 
-- npm run dev -> Start Vite dev server
-- npm run build -> Build production assets
-- npm run preview -> Preview production build locally
-- npm run lint -> Run ESLint
+- npm run dev
+- npm run build
+- npm run preview
+- npm run lint
 
-## Testing
+## Testing Approach
 
-Current validation is primarily manual and API-centric.
+Testing for this project has mainly been API-focused and system-level:
 
-- API testing with Postman
-- End-to-end behavior checks for:
-  - Authentication and RBAC
-  - Event lifecycle transitions
-  - Registration and cancellation logic
-  - Eligibility validation
-  - Reviews and ratings
+- Postman API testing
+- Flow validation for:
+  - authentication and RBAC
+  - event lifecycle transitions
+  - registration and cancellation
+  - eligibility logic
+  - reviews/ratings
 
-## Challenges Solved
+## Challenges Faced
 
-- Designing a robust lifecycle-based event workflow
-- Implementing role-based authorization across multiple modules
-- Enforcing eligibility constraints for participation
-- Structuring MongoDB schema relationships for consistency and scale
-- Integrating Cloudinary for upload management
-- Deploying split frontend/backend infrastructure
+- Designing a practical event lifecycle and keeping transitions safe
+- Applying RBAC consistently across routes/controllers
+- Eligibility validation without overcomplicating schema logic
+- Managing relations cleanly in MongoDB
+- Cloudinary media integration
+- Separate frontend/backend deployment setup
 
-## Future Improvements
+## Future Scope
 
 - Admin analytics dashboard
-- Email and notification workflows
-- Certificate generation for participants
-- Advanced search and filtering
-- Mobile application support
+- Email notifications
+- Event certificate generation
+- Better filters and search
+- Mobile app version
 
 ## Contributors
 
@@ -264,35 +218,4 @@ Current validation is primarily manual and API-centric.
 
 ## License
 
-This project is licensed under the MIT License.
-
-```text
 MIT License
-
-Copyright (c) 2026
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```
-
-## Support
-
-If this project helps you:
-
-- Star the repository
-- Fork and contribute
